@@ -69,6 +69,7 @@
                  vector
                  vector->list
                  string=?
+                 resolve-interface
                  getenv
                  eval-when))
   #:re-export (assert module-define! equal? and error apply module-ref ->bool > <
@@ -87,8 +88,10 @@
                     project_version))
 
 (define* %module (current-module))
-(define* %var-module (make-module))
-(set-module-name! %var-module '(language meson bindings variables))
+(define* %var-module (resolve-interface '(language meson bindings variables))
+  ;; (make-module)
+  )
+;; (set-module-name! %var-module '(language meson bindings variables))
 (define* (message arg)
   (pk 'message arg))
 
@@ -121,9 +124,6 @@
 
 (define* (set cd tag value #:key description #:allow-other-keys)
   (pk 'set))
-;; (define-method (set (o <configuration-data>) value . rest)
-;;   (pk 'set- o value rest)
-;;   (apply .set o value rest '())  )
 
 (define-method (%subscript (o <string>) index)
   (string (string-ref o index)))
