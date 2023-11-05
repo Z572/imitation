@@ -4,6 +4,7 @@
   #:use-module ((oop goops) #:select (<number>
                                       <string>
                                       <vector>
+                                      is-a?
                                       make
                                       define-method
                                       define-class))
@@ -76,6 +77,8 @@
                       not
                       member
                       begin
+                      list
+                      quote
                       vector->list
                       *unspecified*
                       (vector . %vector))
@@ -85,10 +88,10 @@
                     %mcall
                     %assignment
                     %id
+                    configuration_data
                     project_version))
 
-(define* %module (current-module))
-(define* %var-module (resolve-interface '(language meson bindings variables))
+(define* %var-module (resolve-module '(language meson bindings variables))
   ;; (make-module)
   )
 ;; (set-module-name! %var-module '(language meson bindings variables))
@@ -106,7 +109,8 @@
   (pk 'p name language version license default_options meson_version))
 
 
-(define-class <configuration-data> ())
+(define-class <configuration-data> ()
+  (readonly? #:init-value #f #:accessor conf-data-readonly?))
 (define-class <compiler> ())
 (define-class <c-compiler> (<compiler>))
 (define-class <meson> ())
@@ -119,11 +123,18 @@
       (make <c-compiler>)
       ;; (or (getenv "CC") "gcc")
       (make <compiler>)))
-(define-public (configuration_data)
+(define* (configuration_data #:optional dict)
   (make <configuration-data>))
 
 (define* (set cd tag value #:key description #:allow-other-keys)
+  (assert (is-a? cd <configuration-data>))
+  (assert (not (conf-data-readonly? cd)))
   (pk 'set))
+
+(define* (set10 cd tag value #:key description #:allow-other-keys)
+  (assert (is-a? cd <configuration-data>))
+  (assert (not (conf-data-readonly? cd)))
+  (pk 'set10 (->bool value)))
 
 (define-method (%subscript (o <string>) index)
   (string (string-ref o index)))
@@ -190,8 +201,8 @@
       ((_ = name value)
        #`(module-define! %var-module 'name value))
       ((_ += name value)
-       #`(set! (module-ref %module name value)
-               (+ (module-ref %module name value) value)
+       #`(set! (module-ref %var-module name value)
+               (+ (module-ref %var-module name value) value)
                )))))
 ;; (define-syntax-rule (assignment op name value)
 ;;   (if (eq? 'op '=)

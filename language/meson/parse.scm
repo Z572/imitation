@@ -20,7 +20,6 @@
 (define (parse-meson exp)
   (define retrans
     (lambda (x)
-      ;;(pk x)
       (parse-meson x)))
   (define (handle-if exp)
     (match exp
@@ -95,9 +94,13 @@
     (("multiplicative_expression" exp ("multiplicative_operator" op) exp2)
      `(multip ,op ,(retrans exp) ,(retrans exp2)))
     (("dictionary_literal" "{}")
-     `(dict))
+     `(list 'dict))
     (("dictionary_literal" ("key_value_item" k v) ...)
-     `(dict (zip (map retrans k) (map retrans v))))
+     ;; `(apply list 'dict ,@(fl)
+     ;;         '())
+     (apply append '(list 'dict) (zip (map (compose symbol->keyword string->symbol retrans) k)
+                                      (map retrans v)))
+     )
     (("array_literal" "[]") #())
     (("array_literal" . body)
      `(%vector ,@(map retrans body)))

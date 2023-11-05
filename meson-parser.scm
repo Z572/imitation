@@ -20,7 +20,7 @@
 
 (define (main args)
   (define no-dump? (= (length args) 1))
-  (call-with-input-file "/home/z572/gits/systemd/meson.build"
+  (call-with-input-file "meson.build"
     (lambda (x)
       ((if no-dump? pretty-print identity)
        (read-and-compile
