@@ -45,8 +45,7 @@
 
   (match exp
     (("build_definition" . body)
-     `(begin ,@(map retrans body)
-             *unspecified*))
+     `(begin ,@(map retrans body)))
     (("comment" str)
      `(comment ,str))
     (("continue" "continue")
@@ -63,7 +62,7 @@
     (((or "expression" "expression_statement") o)
      (retrans o))
     (("additive_expression" arg1 ("additive_operator" op) arg2)
-     `(add ,op ,(retrans arg1) ,(retrans arg2)))
+     (list (string->symbol op) (retrans arg1) (retrans arg2)))
     (("iteration_statement"
       ("foreach" "foreach")
       ("identifier_list" . identifier_list)
@@ -92,20 +91,25 @@
     (("statement_list" . s)
      `(begin ,@(map retrans s)))
     (("multiplicative_expression" exp ("multiplicative_operator" op) exp2)
-     `(multip ,op ,(retrans exp) ,(retrans exp2)))
+     (list (string->symbol op) (retrans exp) (retrans exp2)))
     (("dictionary_literal" "{}")
      `(list 'dict))
     (("dictionary_literal" ("key_value_item" k v) ...)
      ;; `(apply list 'dict ,@(fl)
      ;;         '())
-     (apply append '(list 'dict) (zip (map (compose symbol->keyword string->symbol retrans) k)
-                                      (map retrans v)))
+     `(list
+       'dict
+       ,@(zip
+          (make-list (length k)
+                     'list)
+          (map retrans k)
+          (map retrans v)))
      )
     (("array_literal" "[]") #())
     (("array_literal" . body)
      `(%vector ,@(map retrans body)))
     (("function_expression" ("identifier" name) . args)
-     `(%fcall
+     `(%call
        ,(string->symbol name)
        ,@(append-map (lambda (x)
                        (match (retrans x)

@@ -1,6 +1,10 @@
 (define-module (language meson bindings)
   #:pure
-  #:use-module ((rnrs base) #:select (assert))
+  #:use-module ((rnrs base) #:select ((assert . %rnrs-assert)))
+  #:use-module (srfi srfi-34)
+  #:use-module ((rnrs conditions) #:select (message-condition? condition make-message-condition
+                                                               make-assertion-violation
+                                                               assertion-violation?))
   #:use-module ((oop goops) #:select (<number>
                                       <string>
                                       <vector>
@@ -13,6 +17,7 @@
                 (include-from-path
                  >
                  <
+                 +
                  define-syntax-rule
                  or
                  quote
@@ -73,22 +78,32 @@
                  resolve-interface
                  getenv
                  eval-when))
-  #:re-export (assert module-define! equal? and error apply module-ref ->bool > <
-                      not
-                      member
-                      begin
-                      list
-                      quote
-                      vector->list
-                      *unspecified*
-                      (vector . %vector))
+  #:re-export (module-define!
+               equal?
+               and
+               error
+               apply
+               module-ref
+               ->bool
+               >
+               <
+               not
+               member
+               begin
+               list
+               quote
+               vector->list
+               *unspecified*
+               (vector . %vector))
   #:export (%module %var-module project message to_int to_string %subscript set
+                    assert
                     get_compiler
-                    %fcall
+                    %call
                     %mcall
                     %assignment
                     %id
                     configuration_data
+                    %equal
                     project_version))
 
 (define* %var-module (resolve-module '(language meson bindings variables))
@@ -150,16 +165,24 @@
 (define-syntax-rule (%id o)
   (module-ref %var-module 'o))
 
-;; (define* (string str) str)
-
-(define-syntax %fcall
+(define-syntax assert
   (lambda (x)
     (syntax-case x ()
-      ((_ func ...)
-       #`(func ...))
+      ((_ e) #`(%rnrs-assert e))
+      ((_ expression n)
+       #`(or expression
+             (raise (condition
+                     (make-assertion-violation)
+                     (make-message-condition
+                      n))))))))
+
+(define-syntax %call
+  (lambda (x)
+    (syntax-case x ()
+      ((_ func)
+       #`(func))
       ((_ . func)
-       #`func)
-      )))
+       #`func))))
 
 (define-syntax %mcall
   (lambda (x)
@@ -170,14 +193,6 @@
       ((_ (obj func) arg args ...)
        #`(func obj arg args ...))
       )))
-;; (define-syntax-rule (%mcall a . args)
-;;   '(list 'a 'args ...)
-;;   ;; (lambda (x)
-;;   ;;   (syntax-case x ()
-;;   ;;     ((_ a args ...)
-;;   ;;      #`(list 'a args ...)
-;;   ;;      )))
-;;   )
 (define-syntax %equal
   (lambda (x)
     (syntax-case x (== !=)
@@ -195,18 +210,22 @@
        #`(->bool (member v (vector->list lst))))
       ((_ (op) v v2)
        #`(->bool (op v v2))))))
+
 (define-syntax %assignment
   (lambda (x)
     (syntax-case x (= +=)
       ((_ = name value)
-       #`(module-define! %var-module 'name value))
+       #`(let ((v value))
+           (if (false-if-exception
+                (module-ref %var-module 'name))
+               (error 'name 'redefine-to  'value)
+               (module-define! %var-module 'name v))))
       ((_ += name value)
-       #`(set! (module-ref %var-module name value)
-               (+ (module-ref %var-module name value) value)
-               )))))
-;; (define-syntax-rule (assignment op name value)
-;;   (if (eq? 'op '=)
-;;       (set! name value )))
-(define-syntax-rule (*top* rest ...)
-  (begin rest ...)
-  )
+       #`(let ((v value)
+               (exists (false-if-exception
+                        (module-ref %var-module 'name))))
+           (if exists
+               (module-define! %var-module 'name
+                               (+ exists v))
+               (error '+= 'name 'no-exists)
+               ))))))
