@@ -2,6 +2,7 @@
   #:pure
   #:use-module ((rnrs base) #:select ((assert . %rnrs-assert)))
   #:use-module (srfi srfi-34)
+  #:use-module ((srfi srfi-1) #:prefix srfi-1:)
   #:use-module ((rnrs conditions) #:select (message-condition? condition make-message-condition
                                                                make-assertion-violation
                                                                assertion-violation?))
@@ -104,6 +105,9 @@
                     %id
                     configuration_data
                     %equal
+                    %relational
+                    contains
+                    environment
                     project_version))
 
 (define* %var-module (resolve-module '(language meson bindings variables))
@@ -123,12 +127,17 @@
                   )
   (pk 'p name language version license default_options meson_version))
 
+(define-method (contains (o <vector>) i)
+  (member i (vector->list o)))
 
 (define-class <configuration-data> ()
   (readonly? #:init-value #f #:accessor conf-data-readonly?))
 (define-class <compiler> ())
 (define-class <c-compiler> (<compiler>))
 (define-class <meson> ())
+(define-class <env> ())
+(define* (environment o #:key (method "set") (separator ":"))
+  (make <env>))
 (define* current-meson (make <meson>))
 (module-define! %var-module 'meson current-meson)
 (define-method (project_version (m <meson>) )
