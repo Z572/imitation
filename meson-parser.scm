@@ -1,4 +1,4 @@
-#!/usr/bin/env -S guile --no-auto-compile -e main -L .
+#!/usr/bin/env -S guix shell guile guile-ts -- guile --no-auto-compile -L .
 !#
 (use-modules
  (ice-9 threads)
@@ -18,15 +18,7 @@
  (system base target)
  (ice-9 match))
 
-(define (main args)
-  (define no-dump? (= (length args) 1))
-  (call-with-input-file "meson.build"
-    (lambda (x)
-      ((if no-dump? pretty-print identity)
-       (read-and-compile
-        x
-        #:from meson
-        #:to
-        (if no-dump?
-            'scheme
-            'value))))))
+(compile-and-load "meson.build"
+                  #:from meson
+                  #:to
+                  'value)

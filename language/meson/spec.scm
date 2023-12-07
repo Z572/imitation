@@ -30,8 +30,13 @@
       m))
   #:printer write
   #:compilers
-  `((scheme . ,(lambda (source module wtf)
-                 (values
-                  source
-                  module
-                  module)))))
+  `(;; (scheme . ,(lambda (source module wtf)
+    ;;              (values
+    ;;               source
+    ;;               module
+    ;;               module)))
+    (tree-il . ,(lambda (source module wtf)
+                  (values
+                   (meson-ast->tree-il source)
+                   module
+                   module)))))
