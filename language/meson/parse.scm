@@ -47,7 +47,7 @@
 
   (match exp
     (("build_definition" . body)
-     `(begin ,@(map retrans body)))
+     `(build-definition ,@(map retrans body)))
     (("comment" str)
      `(comment ,str))
     (("continue" "continue")
@@ -137,13 +137,9 @@
      (let ((f b (match (retrans fe)
                   ((_ name . args)
                    (values name args)))))
-       `(,f ,(retrans id)
-            ;; %mcall ,(list f (retrans id)
-
-            ;;               )
-            ;; ,@(map retrans args)
-            ,@b
-            )))
+       `(method-call
+         ,f ,(retrans id)
+         ,@b)))
     (("string_literal" b)
      (substring b 1 (- (string-length b) 1)))
     (("fstring_literal" b)
@@ -153,22 +149,23 @@
            ((string= b "false") #f)
            (else (error))))
     (("multiline_string_literal" b)
-     `(fstring ,(substring b 3 (- (string-length b) 3))))
+     `(multiline-string ,(substring b 3 (- (string-length b) 3))))
     (else
      `(uh ,exp))))
 
 (define-public (meson-ast->tree-il exp)
   (define rerun meson-ast->tree-il)
-  (define loc)
+  (define loc #f)
   (match exp
-    (('begin body ...)
+    (((or 'begin 'build-definition) body ...)
      (list->seq loc (map rerun body)))
     (#t (make-const loc #t))
     (#f (make-const loc #f))
     (('f-id id)
      (make-module-ref loc '(meson function) id #t))
-    (((and f (or '+ '- '* '/ '< '>)) a b)
+    (((and f (or '+ '- '* '< '>)) a b)
      (make-primcall loc f (map rerun (list a b))))
+
     (('%relational kw v1 lst)
      (make-call loc (rerun `(f-id %relational))
                 (cons (make-const loc kw)
@@ -179,12 +176,22 @@
      (make-conditional loc (rerun test) (rerun consequent) (rerun alternate)))
     (('%equal op v1 v2)
      (make-call loc (rerun `(f-id ,op)) (map rerun (list v1 v2)) ))
+
+    (('or v1 v2)
+     (make-conditional loc (rerun v1) (rerun v1) (rerun v2)))
+    (('/ v1 v2)
+     (make-call loc (rerun `(f-id meson-/)) (map rerun (list v1 v2))))
+
     (('%call id ass ...)
      (make-call loc (rerun id) (map rerun ass)))
+    (('method-call f obj args ...)
+     (make-call loc (rerun f) (map rerun (cons* obj args ))))
     (('%subscript id index)
      (make-call loc (rerun `(f-id %subscript)) (map rerun (list id index))))
     (('%assignment '= (and name (? symbol?)) value)
      (make-toplevel-define loc #f name (rerun value)))
+    (('multiline-string str)
+     (rerun str))
     (('%id name)
      (make-toplevel-ref loc #f name))
     ((? unspecified?)
