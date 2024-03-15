@@ -81,11 +81,10 @@
     (("subscript_expression" exp index)
      `(%subscript ,(retrans exp) ,(retrans index)))
     (("logical_and_expression" arg1  (_ op) arg2)
-     `(and ;; ,op
-       ,(retrans arg1) ,(retrans arg2)))
+     `(if ,(retrans arg1) ,(retrans arg2) #f))
     (("logical_or_expression" arg1  (_ op) arg2)
-     `(or ;; ,op
-       ,(retrans arg1) ,(retrans arg2)))
+     `(if ;; ,op
+       ,(retrans arg1) ,(retrans arg1) ,(retrans arg2)))
     (("equality_expression" arg1 ("equality_operator" op) arg2)
      `(%equal ,(string->symbol op) ,(retrans arg1) ,(retrans arg2) ))
     (("selection_statement" body ...)
