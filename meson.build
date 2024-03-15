@@ -66,3 +66,4 @@ int main (int argc, char ** argv) {
 }'''
 
 pk(multiline_string)
+assert(( 5 % 2) == 2)

@@ -18,7 +18,6 @@
  (system base target)
  (ice-9 match))
 
-(compile-and-load "meson.build"
+(compile-and-load (second (program-arguments))
                   #:from meson
-                  #:to
-                  'value)
+                  #:to 'value)
