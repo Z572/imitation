@@ -48,8 +48,8 @@
   (match exp
     (("build_definition" . body)
      `(build-definition ,@(map retrans body)))
-    (("comment" str)
-     `(comment ,str))
+    (("comment")
+     `(comment))
     (("continue" _)
      'continue)
     (("break" _)
@@ -213,6 +213,8 @@
      (make-void loc))
     ((and (or (? string?) (? number?) (? keyword?)) obj)
      (make-const loc obj))
+    (('comment)
+     (make-void loc))
     (a a)))
 
 (define (handle-number n)
