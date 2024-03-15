@@ -1,5 +1,6 @@
 (define-module (meson function)
   #:use-module (meson types)
+  #:use-module (system base compile)
   #:use-module (ice-9 optargs)
   #:use-module (oop goops)
   #:use-module (srfi srfi-43)
@@ -198,3 +199,10 @@
 
 (define-method-public (%subscript (vc <string>) index)
   (string-ref vc index))
+
+(define-public (subdir dir)
+  (compile-and-load
+   (string-append dir "/meson.build")
+   #:from (@ (language meson spec) meson)
+   #:to 'value
+   #:env (current-module)))

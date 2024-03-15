@@ -31,7 +31,7 @@ message(conf.get('PROJECT_VERSION'))
 #   'UNDEFINED' : false,
 # })
 assert(1 not in [2, 3, 4])
-
+subdir('meson')
 # assert([1, 2, 3, 4, 5].contains(3))
 ccc= false or false or 20
 message(ccc)
