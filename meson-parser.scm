@@ -8,6 +8,7 @@
  (srfi srfi-71)
  (srfi srfi-171)
  (ice-9 pretty-print)
+ (oop goops describe)
  (meson types)
  (ice-9 iconv)
  (ice-9 textual-ports)
@@ -23,3 +24,5 @@
         (second (program-arguments))
         #:from meson
         #:to 'value))
+(describe (%meson))
+(module-for-each pk (.variables (%meson)))
