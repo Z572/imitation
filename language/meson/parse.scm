@@ -103,7 +103,7 @@
           (map retrans k)
           (map retrans v)))
      )
-    (("array_literal" "[]") #())
+    (("array_literal" "[]") `(%vector))
     (("array_literal" . body)
      `(%vector ,@(map retrans body)))
     (("function_expression" ("identifier" name) . args)
