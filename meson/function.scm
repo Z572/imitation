@@ -79,6 +79,9 @@
 (define-method-public (meson-/ (str1 <string>) (str2 <string>))
   (string-append str1 "/" str2))
 
+(define-method-public (meson-% v1 v2)
+  (remainder v1 v2))
+
 (define-method-public (%subscript (vc <vector>) index)
   (vector-ref vc index))
 

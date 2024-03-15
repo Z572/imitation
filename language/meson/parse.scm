@@ -179,6 +179,8 @@
 
     (('or v1 v2)
      (make-conditional loc (rerun v1) (rerun v1) (rerun v2)))
+    (('% v1 v2)
+     (make-call loc (rerun `(f-id meson-%)) (map rerun (list v1 v2))))
     (('/ v1 v2)
      (make-call loc (rerun `(f-id meson-/)) (map rerun (list v1 v2))))
 
