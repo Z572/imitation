@@ -23,6 +23,7 @@
                          default_options
                          meson_version
                          )
+  (pk '%meson (%meson))
   (pk 'p name language version license default_options meson_version))
 
 (define* (assert exp #:optional message)

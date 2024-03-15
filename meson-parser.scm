@@ -8,6 +8,7 @@
  (srfi srfi-71)
  (srfi srfi-171)
  (ice-9 pretty-print)
+ (meson types)
  (ice-9 iconv)
  (ice-9 textual-ports)
  (rnrs bytevectors gnu)
@@ -18,6 +19,7 @@
  (system base target)
  (ice-9 match))
 
-(compile-and-load (second (program-arguments))
-                  #:from meson
-                  #:to 'value)
+(pk 'v (compile-and-load
+        (second (program-arguments))
+        #:from meson
+        #:to 'value))
