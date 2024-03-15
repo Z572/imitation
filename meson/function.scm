@@ -175,11 +175,20 @@
         (error 'redefine!)
         (module-define! hm name value))))
 
+(define-public (%assignment+= name value)
+  (let ((hm (.variables (%meson))))
+    (if (module-defined? hm name)
+        (module-define! hm name (meson-+ (module-ref name) value))
+        (error '%assignment-no-defined!))))
+
 (define-public (%get-id name)
   (module-ref (.variables (%meson)) name ))
 
 (define-method-public (meson-/ (str1 <string>) (str2 <string>))
   (string-append str1 "/" str2))
+
+(define-method-public (meson-+ (str1 <string>) (str2 <string>))
+  (string-append str1  str2))
 
 (define-method-public (meson-% v1 v2)
   (remainder v1 v2))

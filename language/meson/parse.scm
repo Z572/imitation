@@ -196,9 +196,11 @@
     (('%assignment '= (and name (? symbol?)) value)
      (make-call loc (rerun `(f-id %assignment))
                 (list (make-const loc name)
-                      (rerun value)))
-     ;; (make-toplevel-define loc #f name (rerun value))
-     )
+                      (rerun value))))
+    (('%assignment '+= (and name (? symbol?)) value)
+     (make-call loc (rerun `(f-id %assignment+=))
+                (list (make-const loc name)
+                      (rerun value))))
     (('dict)
      (make-call
       loc
