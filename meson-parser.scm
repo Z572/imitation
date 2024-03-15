@@ -20,9 +20,10 @@
  (system base target)
  (ice-9 match))
 
-(pk 'v (compile-and-load
-        (second (program-arguments))
-        #:from meson
-        #:to 'value))
-(describe (%meson))
+(describe (compile-and-load
+           (second (program-arguments))
+           #:from meson
+           #:to 'value))
 (module-for-each pk (.variables (%meson)))
+(hash-for-each (lambda (x n)
+                 (pk 'op x n)) (.options (%meson)))

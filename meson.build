@@ -18,6 +18,7 @@ libudev_version = '1.7.7'
 libudev = 20
 # libudev += 2
 message(libudev)
+message(meson.project_license())
 meson_build_sh = find_program('meson.build', required : true)
 conf = configuration_data()
 conf.set('PROJECT_VERSION','20-12')

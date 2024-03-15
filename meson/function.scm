@@ -2,6 +2,8 @@
   #:use-module (meson types)
   #:use-module (ice-9 optargs)
   #:use-module (oop goops)
+  #:use-module (srfi srfi-43)
+  #:use-module (oop goops describe)
   #:use-module (ice-9 match)
   #:use-module ((guix licenses) #:prefix license:)
   #:re-export (pk error)
@@ -50,11 +52,12 @@
     ('(in)
      (->bool (member i (vector->list o))))))
 
-(define (%license-case str)
+(define (license-case str)
   (match str
     ("LGPLv2+" license:lgpl2.0+)
-    (else (error 'unknow-license!))))
-(define (%ensure-list o)
+    (else (pk 'unknow-license!)
+          str)))
+(define (ensure-list o)
   (if (list? o)
       o
       (list o)))
@@ -62,18 +65,32 @@
                          language
                          #:key
                          version
-                         license
-                         default_options
+                         (license #f)
+                         (default_options #())
                          meson_version
                          )
-  (pk '%meson (%meson))
-  (when meson_version
-    (set! (.meson-version (%meson)) meson_version))
-  (set! (.languages (%meson)) (%ensure-list language))
-  (when version
-    (set! (.version (%meson)) version))
-  (when license
-    (set! (.license (%meson)) (%license-case license)))
+  (define meson (%meson))
+  (let-syntax ((when=>
+                (syntax-rules ()
+                  ((_ var acc)
+                   (let ((v var))
+                     (when v
+                       (set! (acc meson) v)))))))
+    (pk '%meson (%meson))
+    (when=> meson_version .meson-version)
+    (when=> (ensure-list language) .languages)
+    (when=> version .version)
+    (when=>  (license-case license) .license)
+
+
+    (when default_options
+      (let ((op(.options meson)))
+        (vector-for-each (lambda (n x)
+                           (match (string-split x #\=)
+                             ((name value ) (hash-set! op name value))))
+                         default_options)))
+    )
+
   (pk 'p name language version license default_options meson_version))
 
 (define* (assert exp #:optional message)
@@ -127,6 +144,9 @@
              body ...)
            (export name))))))
 
+(define-method-public (get_compiler (o <meson>))
+  1)
+
 (define-method-public (set (o <configuration-data>) key value . args)
   (apply (lambda* (#:key (description #f))
            (hash-set! (configuration.table o) key
@@ -141,6 +161,9 @@
 
 (define-method-public (startswith (o <string>) start)
   (string-prefix? start o))
+
+(define-method-public (project_license (o <meson>))
+  (.license o))
 
 (define-method (meson-/ v1 v2)
   (/ v1 v2))

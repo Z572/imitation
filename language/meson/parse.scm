@@ -158,7 +158,11 @@
   (define loc #f)
   (match exp
     (('build-definition body ...)
-     (list->seq loc (map rerun body)))
+     (list->seq loc (append (map rerun body)
+                            (list (make-call
+                                   loc
+                                   (make-module-ref loc '(meson types) '%meson #t)
+                                   '())))))
     (('begin body ...)
      (list->seq loc (map rerun body)))
     (#t (make-const loc #t))
