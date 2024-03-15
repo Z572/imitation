@@ -69,3 +69,10 @@ int main (int argc, char ** argv) {
 
 pk(multiline_string)
 assert(( 5 % 2) == 2)
+
+summary({'Some boolean': false,
+        'Another boolean': true,
+        'Some string': 'Hello World',
+        'A list': ['string', 1, true],
+        },
+        section: 'Configuration')

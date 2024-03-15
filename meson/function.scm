@@ -97,6 +97,16 @@
 (define* (assert exp #:optional message)
   (pk 'assert exp message))
 
+(define*-public (summary key_or_dict
+                         #:optional
+                         value
+                         #:key (bool_yn #f)
+                         list_sep
+                         (section #f))
+  (pk 'summary
+      section
+      ))
+
 (define*-public (message arg)
   (pk 'message arg))
 
