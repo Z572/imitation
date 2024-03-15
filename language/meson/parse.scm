@@ -94,15 +94,12 @@
     (("multiplicative_expression" exp ("multiplicative_operator" op) exp2)
      (list (string->symbol op) (retrans exp) (retrans exp2)))
     (("dictionary_literal" "{}")
-     `(list 'dict))
+     `(dict))
     (("dictionary_literal" ("key_value_item" k v) ...)
      ;; `(apply list 'dict ,@(fl)
      ;;         '())
-     `(list
-       'dict
+     `(dict
        ,@(zip
-          (make-list (length k)
-                     'list)
           (map retrans k)
           (map retrans v)))
      )
@@ -201,6 +198,18 @@
                       (rerun value)))
      ;; (make-toplevel-define loc #f name (rerun value))
      )
+    (('dict)
+     (make-call
+      loc
+      (make-module-ref loc '(meson types) 'make-dictionarie #f)
+      '()))
+    (('dict a ...)
+     (make-call
+      loc
+      (make-module-ref loc '(meson types) 'make-dictionarie #f)
+      (map (match-lambda ((s o) (make-call loc
+                                           (make-module-ref loc '(guile) 'list #t)
+                                           (list (rerun s) (rerun o))))) a)))
     (('multiline-string str)
      (rerun str))
     (('%id name)

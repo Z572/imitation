@@ -2,6 +2,7 @@
 (define-module (meson types)
   #:use-module (oop goops)
   #:use-module (oop goops describe)
+  #:use-module (ice-9 match)
   #:export (<compiler>
             <c-compiler>
             <meson>
@@ -16,6 +17,15 @@
             .languages
             .license
             .options))
+(define-class <dictionarie> ()
+  (tb #:init-form (make-hash-table) #:getter .tb))
+
+(define (make-dictionarie . l)
+  (let* ((d (make <dictionarie>))
+         (tb (.tb d)))
+    (for-each (match-lambda ((v b) (hash-set! tb v b)))l )
+    d))
+
 (define-class <compiler> ())
 (define-class <c-compiler> (<compiler>))
 (define-class <dependency> ()
