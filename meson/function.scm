@@ -59,7 +59,7 @@
     ('(not in)
      (not (%relational '(in) i o)))
     ('(in)
-     (->bool (member i (vector->list o))))))
+     (->bool (member i (vector->list (pk '%relational o)))))))
 
 (define (license-case str)
   (match str
@@ -101,7 +101,8 @@
     (let ((op(.options meson)))
       (for-each  (lambda (x)
                    (match (string-split x #\=)
-                     ((name value ) (hash-set! op name value))))
+                     ((name value )
+                      (hash-set! op name (make <option> #:name name #:value value #:type "string")))))
                  (vector->list default_options))))
   (pk 'p name language version license default_options meson_version))
 
@@ -268,9 +269,11 @@
 (define*-public (get_option name)
   (assert (string? name))
   (let ((v (hash-ref (.options (%meson)) name #f)))
-    (when v
-      (case (.type v)
-        ((string) (.value v))))))
+    ;; (when v
+    ;;   (case (.type v)
+    ;;     ((string) (.value v))))
+    (or v (error 'not-found! "t" name))
+    ))
 
 (define-public (!= a b)
   (not (equal? a b)))
@@ -318,6 +321,9 @@
 (define-method-public (get (o <configuration-data>) key . args)
   (assoc-ref (hash-ref (configuration.table o) key) 'value))
 
+(define-method-public (startswith (o <option>) start)
+  (assert (string= (.type o) "string"))
+  (string-prefix? start (.value o)))
 (define-method-public (startswith (o <string>) start)
   (string-prefix? start o))
 
@@ -342,7 +348,7 @@
 (define-public (%assignment+= name value)
   (let ((hm (.variables (%meson))))
     (if (module-defined? hm name)
-        (module-define! hm name (meson-+ (module-ref name) value))
+        (module-define! hm name (meson-+ (module-ref hm name) value))
         (error '%assignment-no-defined!))))
 
 (define* (meson-append env a b)
@@ -357,19 +363,47 @@
 (define-method (meson-/ (v1 <number>) (v2 <number>))
   (/ v1 v2))
 
+(define-method (meson-/ (v1 <string>) (v2 <option>))
+  (assert (string= "string"(.type v2)) )
+  (meson-/ v1 (.value v2)))
+
+(define-method-public (meson-/ (str1 <option>) str2)
+  (assert (string= "string"(.type str1)) )
+  (meson-/ (.value str1) str2))
+
 (define-method-public (meson-/ (str1 <string>) (str2 <string>))
   (string-append str1 "/" str2))
 
+(define-method (meson-+ (v1 <string>) (v2 <option>))
+  (assert (string= "string"(.type v2)) )
+  (meson-+ v1 (.value v2)))
+
 (define-method-public (meson-+ (str1 <string>) (str2 <string>))
   (string-append str1  str2))
+
+(define-method-public (meson-+ (str1 <vector>) (str2 <string>))
+  (list->vector (append (vector->list str1) (list str2)))  )
 
 (define-method-public (meson-error str1)
   (error 'meson-error str1))
 (define-method-public (meson-% v1 v2)
   (remainder v1 v2))
 
+(define-method-public (join (str <string>) a)
+  (pk 'join)
+  str)
+
+(define*-public (find_library str name #:key (required #t))
+  (assert (is-a? str <compiler>))
+  (pk 'find_library)
+  (make <dependency> #:name name))
+
 (define-method-public (found (f <external-program>))
   (pk 'found <external-program>)
+  #t)
+
+(define-method-public (found (f <dependency>))
+  (pk 'found-dep f)
   #t)
 
 (define-method-public (%subscript (vc <vector>) index)
