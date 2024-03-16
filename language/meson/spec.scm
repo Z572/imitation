@@ -24,9 +24,6 @@
   #:make-default-environment
   (lambda ()
     (let ((m (make-module)))
-      (module-use!
-       m (resolve-interface
-          '(language meson bindings)))
       m))
   #:printer write
   #:compilers
