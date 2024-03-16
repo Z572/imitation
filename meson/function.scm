@@ -48,6 +48,7 @@
             (meson-prepend . prepend)
             (meson-/ . /)
             (meson-% . %)
+            (meson-+ . +)
             (meson-format . format)
             (meson-error . error)))
 
@@ -247,8 +248,9 @@
     (search-path (cons "." (parse-path (getenv "PATH"))) path)))
 
 (define*-public (get_option name)
+  (assert (string? name))
   (pk 'get_option name
-      (hash-ref (.options (%meson)) name)))
+      (hash-ref (.options (%meson)) name 'get_option_no_found)))
 
 (define-public (!= a b)
   (not (equal? a b)))
@@ -265,9 +267,13 @@
            (export name))))))
 
 
+(define-method-public (cmd_array (compiler <compiler>))
+  (pk 'compiler 'cmd_array compiler)
+  'cmd_array)
 (define*-public (get_compiler meson language #:key (native #f))
   (assert (is-a? meson <meson>))
-  1)
+  1
+  (make <c-compiler>))
 (define*-public (project_version meson)
   (assert (is-a? meson <meson>))
   (.version meson))
@@ -307,9 +313,6 @@
 (define-method-public (project_license (o <meson>))
   (.license o))
 
-(define-method (meson-/ v1 v2)
-  (/ v1 v2))
-
 (define-public (%assignment name value)
   (let ((hm (.variables (%meson))))
     (if (module-defined? hm name)
@@ -330,6 +333,9 @@
 
 (define-public (%get-id name)
   (module-ref (.variables (%meson)) name ))
+
+(define-method (meson-/ (v1 <number>) (v2 <number>))
+  (/ v1 v2))
 
 (define-method-public (meson-/ (str1 <string>) (str2 <string>))
   (string-append str1 "/" str2))

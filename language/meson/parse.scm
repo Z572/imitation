@@ -166,7 +166,7 @@
     (#f (make-const loc #f))
     (('f-id id)
      (make-module-ref loc '(meson function) id #t))
-    (((and f (or '+ '- '* '< '>)) a b)
+    (((and f (or '* '< '>)) a b)
      (make-primcall loc f (map rerun (list a b))))
 
     (('%relational kw v1 lst)
@@ -182,7 +182,7 @@
 
     (('or v1 v2)
      (make-conditional loc (rerun v1) (rerun v1) (rerun v2)))
-    (((and (or '/ '%) v) v1 v2)
+    (((and (or '/ '% '+ '-) v) v1 v2)
      (make-call loc (rerun `(f-id ,v)) (map rerun (list v1 v2))))
 
     (('%call id ass ...)
