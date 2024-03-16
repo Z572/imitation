@@ -45,7 +45,9 @@
   ;;                                  quote))
   #:export ((%assert . assert)
             (meson-append . append)
-            (meson-prepend . prepend)))
+            (meson-prepend . prepend)
+            (meson-/ . /)
+            (meson-% . %)))
 
 (define-public (%vector . args)
   (apply vector args))
