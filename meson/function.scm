@@ -4,9 +4,9 @@
   #:use-module (system base compile)
   #:use-module (ice-9 optargs)
   #:use-module (oop goops)
-  #:use-module (srfi srfi-43)
   #:use-module (oop goops describe)
   #:use-module (ice-9 match)
+  #:use-module (rnrs base)
   #:use-module ((guix licenses) #:prefix license:)
   #:re-export (pk error)
   ;; #:pure
@@ -43,7 +43,7 @@
   ;;                                  parse-path
   ;;                                  search-path
   ;;                                  quote))
-  #:export-syntax (assert))
+  #:export ((%assert . assert)))
 
 (define-public (%vector . args)
   (apply vector args))
@@ -84,13 +84,13 @@
     (when=>  (license-case license) .license))
   (when default_options
     (let ((op(.options meson)))
-      (vector-for-each (lambda (n x)
-                         (match (string-split x #\=)
-                           ((name value ) (hash-set! op name value))))
-                       default_options)))
+      (for-each  (lambda (x)
+                   (match (string-split x #\=)
+                     ((name value ) (hash-set! op name value))))
+                 (vector->list default_options))))
   (pk 'p name language version license default_options meson_version))
 
-(define* (assert exp #:optional message)
+(define* (%assert exp #:optional message)
   (pk 'assert exp message))
 
 (define*-public (summary key_or_dict
@@ -172,7 +172,9 @@
              body ...)
            (export name))))))
 
-(define-method-public (get_compiler (o <meson>))
+
+(define*-public (get_compiler meson language #:key (native #f))
+  (assert (is-a? meson <meson>))
   1)
 
 (define-method-public (set (o <configuration-data>) key value . args)
