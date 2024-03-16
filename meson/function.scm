@@ -106,7 +106,19 @@
                  (vector->list default_options))))
   (pk 'p name language version license default_options meson_version))
 
-(define*-public (option name #:key type description deprecated value choices)
+(define*-public (option name #:key
+                        type
+                        description
+                        deprecated
+                        choices
+                        (value
+                         (match type
+                           ("string" "")
+                           ("feature" (make <feature>))
+                           ("combo" (vector-ref choices 0))
+                           ("boolean" #t)
+                           ("integer" 0)
+                           (erro (error 'not-knoew! "t" erro)))))
   (let ((op (.options (%meson))))
     (hash-set! op name (make <option>
                          #:name name
@@ -274,6 +286,8 @@
           ("string" (.value v))
           ("feature" (make <feature>))
           ("combo" (.value v))
+          ("boolean" (.value v))
+          ("integer" (.value v))
           (erro (error 'not-knoew! "t" erro)))
         (error 'not-found! "t" name))
     ))
@@ -299,7 +313,7 @@
 (define*-public (get_compiler meson language #:key (native #f))
   (assert (is-a? meson <meson>))
   1
-  (make <c-compiler>))
+  (make <compiler>))
 (define*-public (project_version meson)
   (assert (is-a? meson <meson>))
   (.version meson))
@@ -339,17 +353,21 @@
 (define-method-public (project_license (o <meson>))
   (.license o))
 
+(define*-public (underscorify str)
+  (pk 'underscorify str ))
+(define*-public (to_upper str)
+  (pk 'to_upper (string-upcase str )))
 (define-public (%assignment name value)
   (let ((hm (.variables (%meson))))
-    (if (module-defined? hm name)
-        (error 'redefine!)
+    (if #t;; (module-defined? hm name)
+        ;; (error 'redefine! "")
         (module-define! hm name value))))
 
 (define-public (%assignment+= name value)
   (let ((hm (.variables (%meson))))
     (if (module-defined? hm name)
         (module-define! hm name (meson-+ (module-ref hm name) value))
-        (error '%assignment-no-defined!))))
+        (error '%assignment-no-defined! "+="))))
 
 (define* (meson-append env a b)
   (pk 'meson-append))
