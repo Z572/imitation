@@ -84,3 +84,11 @@ executable('d','d.c',install : true)
 progs = [['prog1', ['prog1.c', 'foo.c']],
          ['prog2', ['prog2.c', 'bar.c']]]
 
+
+env = environment()
+
+# MY_PATH will be '0:1:2:3'
+env.set('MY_PATH', '1')
+env.append('MY_PATH', '2')
+env.append('MY_PATH', '3')
+env.prepend('MY_PATH', '0')

@@ -43,7 +43,9 @@
   ;;                                  parse-path
   ;;                                  search-path
   ;;                                  quote))
-  #:export ((%assert . assert)))
+  #:export ((%assert . assert)
+            (meson-append . append)
+            (meson-prepend . prepend)))
 
 (define-public (%vector . args)
   (apply vector args))
@@ -109,7 +111,7 @@
 (define*-public (configuration_data #:optional dict)
   (make <configuration-data>))
 
-(define*-public (environment o #:key (method "set") (separator ":"))
+(define*-public (environment #:optional o #:key (method "set") (separator ":"))
   (make <env>))
 (define*-public (dependency name)
   (make <dependency> #:name name))
@@ -177,6 +179,9 @@
   (assert (is-a? meson <meson>))
   1)
 
+(define-method-public (set (o <env>) key value . args)
+  (pk 'set-env))
+
 (define-method-public (set (o <configuration-data>) key value . args)
   (apply (lambda* (#:key (description #f))
            (hash-set! (configuration.table o) key
@@ -200,7 +205,6 @@
 
 (define-public (%assignment name value)
   (let ((hm (.variables (%meson))))
-    (pk '%assignment name value)
     (if (module-defined? hm name)
         (error 'redefine!)
         (module-define! hm name value))))
@@ -210,6 +214,12 @@
     (if (module-defined? hm name)
         (module-define! hm name (meson-+ (module-ref name) value))
         (error '%assignment-no-defined!))))
+
+(define* (meson-append env a b)
+  (pk 'meson-append))
+
+(define* (meson-prepend env a b)
+  (pk 'meson-prepend))
 
 (define-public (%get-id name)
   (module-ref (.variables (%meson)) name ))
