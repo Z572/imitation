@@ -14,6 +14,7 @@
             <lib>
             <run-result>
             <feature>
+            <meson-module>
             <option>
             configuration.table
             .version
@@ -41,6 +42,8 @@
 (define-class <c-compiler> (<compiler>))
 (define-class <dependency> ()
   (name #:getter .name #:init-keyword #:name))
+
+(define-class <meson-module> ())
 (define-class <build-target> ())
 (define-class <lib> (<build-target>))
 (define-class <feature> ())

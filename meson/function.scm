@@ -250,7 +250,8 @@
 (define*-public (install_headers a . o)
   (pk 'install_headers)  )
 (define*-public (import a . o)
-  (pk 'import)  )
+  (pk 'import)
+  (make <meson-module>))
 (define*-public (generate a . o)
   (pk 'generate)  )
 
