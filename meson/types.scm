@@ -20,7 +20,8 @@
             .license
             .options
             .program
-            .fount))
+            .fount
+            .name))
 (define-class <dictionarie> ()
   (tb #:init-form (make-hash-table) #:getter .tb))
 
@@ -55,7 +56,8 @@
     (module-define! (.variables o) 'meson m)
     o))
 (define-class <env> ())
-(define-class <file> ())
+(define-class <file> ()
+  (name #:init-keyword #:name #:getter .name))
 
 (define-class <external-program> ()
   (program #:init-value #f #:init-keyword #:program #:accessor .program)

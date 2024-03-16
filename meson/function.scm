@@ -234,6 +234,10 @@
 (define*-public (generate a . o)
   (pk 'generate)  )
 
+(define*-public (files . o)
+  (map (lambda (x) (make <file> #:name x))
+       o))
+
 (define*-public (find_program path #:key (required #t) (default_optinos '()))
   (pk 'find_program required)
   (make <external-program>
@@ -261,6 +265,9 @@
 (define*-public (get_compiler meson language #:key (native #f))
   (assert (is-a? meson <meson>))
   1)
+(define*-public (project_version meson)
+  (assert (is-a? meson <meson>))
+  (.version meson))
 
 (define-method-public (set (o <env>) key value . args)
   (pk 'set-env))
@@ -274,11 +281,25 @@
 (define-method-public (set10 (o <configuration-data>) key value . args)
   (apply set o key (->bool value) args))
 
+(define-method-public (set_quoted (o <configuration-data>) key value . args)
+  (pk 'set_quoted)
+  ;; (apply set o key (->bool value) args)
+  )
+
 (define-method-public (get (o <configuration-data>) key . args)
   (assoc-ref (hash-ref (configuration.table o) key) 'value))
 
 (define-method-public (startswith (o <string>) start)
   (string-prefix? start o))
+
+(define-method-public (split (o <string>) (char <string>))
+  (string-split  o (string-ref char 0)))
+(define-method-public (split (o <file>) (char <string>))
+  (split (.name o) char))
+
+(define-method-public (split (o <list>) (char <string>))
+  (map (lambda (s) (split s char))
+       o))
 
 (define-method-public (project_license (o <meson>))
   (.license o))
@@ -318,6 +339,9 @@
 
 (define-method-public (%subscript (vc <vector>) index)
   (vector-ref vc index))
+
+(define-method-public (%subscript (vc <list>) index)
+  (list-ref vc index))
 
 (define-method-public (%subscript (vc <string>) index)
   (string-ref vc index))
