@@ -7,6 +7,7 @@
  (gnu packages tree-sitter)
  (guix build-system gnu)
  (guix build-system guile)
+ (guix transformations)
  (guix gexp)
  (guix git-download)
  (guix packages))
@@ -36,7 +37,11 @@
     (native-inputs
      (list guile-3.0-latest))
     (inputs (list guile-3.0-latest ))
-    (propagated-inputs (list guile-ts tree-sitter-meson))
+    (propagated-inputs (list
+                        ((options->transformation
+                          '((with-commit . "guile-ts=958a045fa1b2c1eb73bf46a833894a8684c7a861")))
+                         guile-ts)
+                        tree-sitter-meson))
     (synopsis "")
     (description "")
     (home-page "")

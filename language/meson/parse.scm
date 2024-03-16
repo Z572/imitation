@@ -5,6 +5,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
   #:use-module (srfi srfi-171)
+  #:use-module (srfi srfi-43)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 iconv)
   #:use-module (ice-9 textual-ports)
@@ -253,6 +254,17 @@
            "libtree-sitter-meson.so"
            "tree_sitter_meson"))))
 
+(define* (skfjdsfjs str #:optional (char #\newline) #:key (bg 0))
+  (string-join
+   (cons (if (zero? bg)
+             "-8<---------------------------------------------->8-"
+             "...
+-8<---------------------------------------------->8-")
+         (vector->list
+          (vector-map (lambda (n x) (string-append (number->string (+ bg n)) " |" x))
+                      (list->vector (string-split str char)))))
+   (string char)))
+
 (define (read-meson port env)
   (let ((s (get-string-all port)))
     (define (node-string n)
@@ -265,9 +277,26 @@
         the-eof-object
         (let loop ((rn (ts-tree-root-node (ts-parser-parse-string (force parser) s))))
           (when (ts-node-has-error? rn)
-            (let ((n (find-child rn ts-node-has-error?)))
-              (error 'is-error (node-string n)
-                     (ts-node-start-point n)))
+            (let* ((n (find-child rn ts-node-has-error?))
+                   (parent (ts-node-parent n) ))
+              (format #t "I get a error!
+~a
+~a
+~S ~a--~a
+"
+                      (skfjdsfjs (node-string parent)
+                                 #\newline
+                                 #:bg (car (ts-node-start-point parent)))
+                      (string-join (map (lambda (str)
+
+                                          (string-append (make-string (+ 4 (cdr (ts-node-start-point n))) #\space)
+                                                         str
+                                                         "\n"))
+                                        '("^" "I think is this is a error")))
+
+                      (node-string n)
+                      (ts-node-start-point n) (ts-node-end-point n))
+              (exit 1 ))
             )
           (let ((childs (ts-node-childs rn #t)))
             (if (null? childs)
