@@ -151,7 +151,9 @@
 
 (define*-public (find_program path #:key (required #t) (default_optinos '()))
   (pk 'find_program required)
-  (search-path (cons "." (parse-path (getenv "PATH"))) path))
+  (make <external-program>
+    #:program
+    (search-path (cons "." (parse-path (getenv "PATH"))) path)))
 
 (define*-public (get_option name)
   (pk 'get_option name))

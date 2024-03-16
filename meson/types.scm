@@ -8,6 +8,7 @@
             <meson>
             <env>
             <configuration-data>
+            <external-program>
             <dependency>
             <file>
             configuration.table
@@ -16,7 +17,9 @@
             .variables
             .languages
             .license
-            .options))
+            .options
+            .program
+            .fount))
 (define-class <dictionarie> ()
   (tb #:init-form (make-hash-table) #:getter .tb))
 
@@ -50,7 +53,16 @@
     o))
 (define-class <env> ())
 (define-class <file> ())
+
+(define-class <external-program> ()
+  (program #:init-value #f #:init-keyword #:program #:accessor .program)
+  (found? #:init-value #f #:accessor .fount))
+
+(define-method (write (d <external-program>) port)
+  (format port "#<<external-program> '~a' ~x>" (.program d) (object-address d) ))
+
 (define-class <configuration-data> ()
   (readonly? #:init-value #f #:accessor conf-data-readonly?)
   (table #:init-thunk make-hash-table #:getter configuration.table))
+
 (define-public %meson (make-parameter (make <meson>)))
