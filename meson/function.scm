@@ -111,7 +111,8 @@
       ))
 
 (define*-public (message arg)
-  (pk 'message arg))
+  (pk 'message arg)
+  (format #t "message: ~a~%" arg))
 
 (define*-public (configuration_data #:optional dict)
   (make <configuration-data>))
