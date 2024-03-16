@@ -251,8 +251,8 @@
   (delay (ts-parser-new
           #:language
           (get-ts-language-from-file
-
-           "/gnu/store/v9ixl7pagm1r5jzsnfid1hjz494pfdk6-tree-sitter-meson-1.2-0.3d6dfbd/lib/tree-sitter/libtree-sitter-meson.so"
+           ;; /gnu/store/z7rn6i3bd96il9lcr7l4ykh6imr8a267-tree-sitter-meson-1.2-0.3d6dfbd/lib/tree-sitter/
+           "libtree-sitter-meson.so"
            "tree_sitter_meson"))))
 
 (define (read-meson port env)

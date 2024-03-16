@@ -1,4 +1,4 @@
-#!/usr/bin/env -S guix shell guile guile-ts -- guile --no-auto-compile -L .
+#!/usr/bin/env -S guile --no-auto-compile -L .
 !#
 (use-modules
  (ice-9 threads)
