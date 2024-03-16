@@ -12,6 +12,8 @@
             <dependency>
             <file>
             <lib>
+            <run-result>
+            <feature>
             configuration.table
             .version
             .meson-version
@@ -37,6 +39,8 @@
   (name #:getter .name #:init-keyword #:name))
 (define-class <build-target> ())
 (define-class <lib> (<build-target>))
+(define-class <feature> ())
+(define-class <run-result> ())
 (define-method (write (d <dependency>) port)
   (format port "#<dependency '~a' ~x>" (.name d) (object-address d) ))
 (define (make-meson-default-optional-table)

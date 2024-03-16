@@ -8,7 +8,7 @@
   #:use-module (ice-9 match)
   #:use-module (rnrs base)
   #:use-module ((guix licenses) #:prefix license:)
-  #:re-export (pk error)
+  #:re-export (pk)
   ;; #:pure
   ;; #:use-module ((guile) #:select (define-public
   ;;                                  error
@@ -47,7 +47,9 @@
             (meson-append . append)
             (meson-prepend . prepend)
             (meson-/ . /)
-            (meson-% . %)))
+            (meson-% . %)
+            (meson-format . format)
+            (meson-error . error)))
 
 (define-public (%vector . args)
   (apply vector args))
@@ -245,7 +247,8 @@
     (search-path (cons "." (parse-path (getenv "PATH"))) path)))
 
 (define*-public (get_option name)
-  (pk 'get_option name))
+  (pk 'get_option name
+      (make <feature>)))
 
 (define-public (!= a b)
   (not (equal? a b)))
@@ -334,8 +337,14 @@
 (define-method-public (meson-+ (str1 <string>) (str2 <string>))
   (string-append str1  str2))
 
+(define-method-public (meson-error str1)
+  (error 'meson-error str1))
 (define-method-public (meson-% v1 v2)
   (remainder v1 v2))
+
+(define-method-public (found (f <external-program>))
+  (pk 'found <external-program>)
+  #t)
 
 (define-method-public (%subscript (vc <vector>) index)
   (vector-ref vc index))
@@ -346,6 +355,34 @@
 (define-method-public (%subscript (vc <string>) index)
   (string-ref vc index))
 
+(define-method-public (strip (vc <string>))
+  (pk 'strip)
+  "")
+(define-method-public (strip (vc <string>) strip_chars)
+  (pk 'strip)
+  "")
+
+(define-method-public (auto (vc <feature>))
+  (pk 'auto)
+  "auto"
+  #t)
+(define-method-public (current_source_dir (m <meson>))
+  (pk 'current_source_dir))
+(define-method-public (current_build_dir (m <meson>))
+  (pk 'current_source_dir))
+
+(define*-public (meson-format s . arg)
+  (pk s 'meson-format "meson-format"))
+
+(define*-public (run_command s . arg)
+  (pk  "run_command"
+       (make <run-result>)))
+(define-method-public (stdout ( r <run-result>))
+  (pk 'stdout)
+  "stdout")
+
+(define-method-public (stderr ( r <run-result>))
+  'stderr)
 (define-syntax-rule (with-directory-excursion dir body ...)
   "Run BODY with DIR as the process's current directory."
   (let ((init (getcwd)))
