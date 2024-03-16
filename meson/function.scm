@@ -248,7 +248,7 @@
 
 (define*-public (get_option name)
   (pk 'get_option name
-      (make <feature>)))
+      (hash-ref (.options (%meson)) name)))
 
 (define-public (!= a b)
   (not (equal? a b)))
@@ -383,6 +383,10 @@
 
 (define-method-public (stderr ( r <run-result>))
   'stderr)
+
+(define-method-public (returncode ( r <run-result>))
+  (pk 'returncode)
+  0)
 (define-syntax-rule (with-directory-excursion dir body ...)
   "Run BODY with DIR as the process's current directory."
   (let ((init (getcwd)))
@@ -396,6 +400,7 @@
 
 (define-public (subdir dir)
   (with-directory-excursion dir
+    (pk 'subdir dir)
     (compile-and-load
      "meson.build"
      #:from (@ (language meson spec) meson)
