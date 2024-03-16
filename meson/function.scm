@@ -126,6 +126,10 @@
                             #:key
                             (link_with '())
                             (install #f)
+                            (build_by_default #t)
+                            (dependencies '())
+                            (gnu_symbol_visibility #f)
+                            (native #f)
                             #:rest o)
   (pk 'executable a link_with 'install install 'rest o))
 
