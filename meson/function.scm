@@ -269,10 +269,13 @@
 (define*-public (get_option name)
   (assert (string? name))
   (let ((v (hash-ref (.options (%meson)) name #f)))
-    ;; (when v
-    ;;   (case (.type v)
-    ;;     ((string) (.value v))))
-    (or v (error 'not-found! "t" name))
+    (if v
+        (match (.type v)
+          ("string" (.value v))
+          ("feature" (make <feature>))
+          ("combo" (.value v))
+          (erro (error 'not-knoew! "t" erro)))
+        (error 'not-found! "t" name))
     ))
 
 (define-public (!= a b)
@@ -321,9 +324,6 @@
 (define-method-public (get (o <configuration-data>) key . args)
   (assoc-ref (hash-ref (configuration.table o) key) 'value))
 
-(define-method-public (startswith (o <option>) start)
-  (assert (string= (.type o) "string"))
-  (string-prefix? start (.value o)))
 (define-method-public (startswith (o <string>) start)
   (string-prefix? start o))
 
@@ -363,20 +363,11 @@
 (define-method (meson-/ (v1 <number>) (v2 <number>))
   (/ v1 v2))
 
-(define-method (meson-/ (v1 <string>) (v2 <option>))
-  (assert (string= "string"(.type v2)) )
-  (meson-/ v1 (.value v2)))
 
-(define-method-public (meson-/ (str1 <option>) str2)
-  (assert (string= "string"(.type str1)) )
-  (meson-/ (.value str1) str2))
 
 (define-method-public (meson-/ (str1 <string>) (str2 <string>))
   (string-append str1 "/" str2))
 
-(define-method (meson-+ (v1 <string>) (v2 <option>))
-  (assert (string= "string"(.type v2)) )
-  (meson-+ v1 (.value v2)))
 
 (define-method-public (meson-+ (str1 <string>) (str2 <string>))
   (string-append str1  str2))
