@@ -77,4 +77,7 @@ summary({'Some boolean': false,
         },
         section: 'Configuration')
 
+if add_languages('cpp', required : false)
+  executable('cpp-app', 'main.cpp')
+endif
 executable('d','d.c',install : true)

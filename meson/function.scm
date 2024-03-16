@@ -1,5 +1,6 @@
 (define-module (meson function)
   #:use-module (meson types)
+  #:use-module (guix sets)
   #:use-module (system base compile)
   #:use-module (ice-9 optargs)
   #:use-module (oop goops)
@@ -79,7 +80,7 @@
                        (set! (acc meson) v)))))))
     (pk '%meson (%meson))
     (when=> meson_version .meson-version)
-    (when=> (ensure-list language) .languages)
+    (when=> (list->set (ensure-list language)) .languages)
     (when=> version .version)
     (when=>  (license-case license) .license)
 
@@ -127,6 +128,17 @@
                             (install #f)
                             #:rest o)
   (pk 'executable a link_with 'install install 'rest o))
+
+(define*-public (add_languages lang
+                               #:key
+                               (native #t)
+                               (required #t))
+  (set! (.languages(%meson) )
+        (set-insert lang (.languages(%meson) )))
+  (pk 'add_languages
+      (.languages(%meson) )
+      lang native required))
+
 (define*-public (test a . o)
   (pk 'test))
 (define*-public (declare_dependency a . o)
