@@ -230,9 +230,21 @@
 (define-method-public (%subscript (vc <string>) index)
   (string-ref vc index))
 
+(define-syntax-rule (with-directory-excursion dir body ...)
+  "Run BODY with DIR as the process's current directory."
+  (let ((init (getcwd)))
+    (dynamic-wind
+      (lambda ()
+        (chdir dir))
+      (lambda ()
+        body ...)
+      (lambda ()
+        (chdir init)))))
+
 (define-public (subdir dir)
-  (compile-and-load
-   (string-append dir "/meson.build")
-   #:from (@ (language meson spec) meson)
-   #:to 'value
-   #:env (current-module)))
+  (with-directory-excursion dir
+    (compile-and-load
+     "meson.build"
+     #:from (@ (language meson spec) meson)
+     #:to 'value
+     #:env (current-module))))
