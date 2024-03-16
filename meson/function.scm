@@ -121,8 +121,12 @@
   (pk 'include_directories))
 (define*-public (shared_library a . o)
   (pk 'shared_library))
-(define*-public (executable a #:key link_with . o)
-  (pk 'executable a link_with))
+(define*-public (executable a
+                            #:key
+                            (link_with '())
+                            (install #f)
+                            #:rest o)
+  (pk 'executable a link_with 'install install 'rest o))
 (define*-public (test a . o)
   (pk 'test))
 (define*-public (declare_dependency a . o)

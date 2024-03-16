@@ -76,3 +76,5 @@ summary({'Some boolean': false,
         'A list': ['string', 1, true],
         },
         section: 'Configuration')
+
+executable('d','d.c',install : true)
