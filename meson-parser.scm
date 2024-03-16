@@ -20,10 +20,17 @@
  (system base target)
  (ice-9 match))
 
-(describe (compile-and-load
-           (second (program-arguments))
-           #:from meson
-           #:to 'value))
-(module-for-each pk (.variables (%meson)))
-(hash-for-each (lambda (x n)
-                 (pk 'op x n)) (.options (%meson)))
+(compile-and-load
+ (second (program-arguments))
+ #:from meson
+ #:to 'value)
+
+(define* (describe-meson #:optional (meson (%meson)))
+  (format #t "meson project~%")
+  (module-for-each (lambda (x n)
+                     (format #t "var ~a: value: ~S~%" x (variable-ref n)))
+                   (.variables meson))
+  (hash-for-each (lambda (x n)
+                   (format #t "option ~a: value: ~a~%" x n)) (.options meson)))
+
+(describe-meson)

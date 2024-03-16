@@ -81,3 +81,6 @@ if add_languages('cpp', required : false)
   executable('cpp-app', 'main.cpp')
 endif
 executable('d','d.c',install : true)
+progs = [['prog1', ['prog1.c', 'foo.c']],
+         ['prog2', ['prog2.c', 'bar.c']]]
+

@@ -78,21 +78,16 @@
                    (let ((v var))
                      (when v
                        (set! (acc meson) v)))))))
-    (pk '%meson (%meson))
     (when=> meson_version .meson-version)
     (when=> (list->set (ensure-list language)) .languages)
     (when=> version .version)
-    (when=>  (license-case license) .license)
-
-
-    (when default_options
-      (let ((op(.options meson)))
-        (vector-for-each (lambda (n x)
-                           (match (string-split x #\=)
-                             ((name value ) (hash-set! op name value))))
-                         default_options)))
-    )
-
+    (when=>  (license-case license) .license))
+  (when default_options
+    (let ((op(.options meson)))
+      (vector-for-each (lambda (n x)
+                         (match (string-split x #\=)
+                           ((name value ) (hash-set! op name value))))
+                       default_options)))
   (pk 'p name language version license default_options meson_version))
 
 (define* (assert exp #:optional message)
