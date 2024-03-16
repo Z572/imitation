@@ -115,12 +115,93 @@
 
 (define*-public (environment #:optional o #:key (method "set") (separator ":"))
   (make <env>))
-(define*-public (dependency name)
+(define*-public (dependency name
+                            #:key
+                            allow_fallback
+                            default_options
+                            disabler
+                            fallback
+                            (include_type "preserve")
+                            language
+                            (method "auto")
+                            (native #f)
+                            not_found_message
+                            (required #t)
+                            (static #f)
+                            version)
   (make <dependency> #:name name))
 (define*-public (include_directories a . o)
   (pk 'include_directories))
-(define*-public (shared_library a . o)
-  (pk 'shared_library))
+(define*-public (library a
+                  source
+                  #:key
+                  (build_by_default #t)
+                  (dependencies '())
+                  extra_files
+                  gnu_symbol_visibility
+                  gui_app
+                  implicit_include_directories
+                  include_directories
+                  install
+                  install_dir
+                  install_mode
+                  install_rpath
+                  install_tag
+                  link_args
+                  link_depends
+                  link_language
+                  link_whole
+                  link_with
+                  name_prefix
+                  name_suffix
+                  (native #f)
+                  objects
+                  override_options
+                  rust_abi
+                  rust_crate_type
+                  rust_dependency_map
+                  sources
+                  soversion
+                  version
+                  #:allow-other-keys)
+  (pk 'library a source 'dependencies dependencies)
+  (make <lib>))
+
+(define*-public (shared_library a
+                                source
+                                #:key
+                                (build_by_default #t)
+                                (dependencies '())
+                                extra_files
+                                gnu_symbol_visibility
+                                gui_app
+                                implicit_include_directories
+                                include_directories
+                                install
+                                install_dir
+                                install_mode
+                                install_rpath
+                                install_tag
+                                link_args
+                                link_depends
+                                link_language
+                                link_whole
+                                link_with
+                                name_prefix
+                                name_suffix
+                                (native #f)
+                                objects
+                                override_options
+                                rust_abi
+                                rust_crate_type
+                                rust_dependency_map
+                                sources
+                                soversion
+                                version
+                                #:allow-other-keys)
+  (pk 'shared_library a source 'dependencies dependencies)
+  (make <lib>))
+
 (define*-public (executable a
                             #:key
                             (link_with '())
@@ -130,7 +211,7 @@
                             (gnu_symbol_visibility #f)
                             (native #f)
                             #:rest o)
-  (pk 'executable a link_with 'install install 'rest o))
+  (pk 'executable a link_with 'install install 'dependencies dependencies 'rest o))
 
 (define*-public (add_languages lang
                                #:key

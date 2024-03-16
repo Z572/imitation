@@ -11,6 +11,7 @@
             <external-program>
             <dependency>
             <file>
+            <lib>
             configuration.table
             .version
             .meson-version
@@ -33,6 +34,8 @@
 (define-class <c-compiler> (<compiler>))
 (define-class <dependency> ()
   (name #:getter .name #:init-keyword #:name))
+(define-class <build-target> ())
+(define-class <lib> (<build-target>))
 (define-method (write (d <dependency>) port)
   (format port "#<dependency '~a' ~x>" (.name d) (object-address d) ))
 (define (make-meson-default-optional-table)
