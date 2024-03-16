@@ -20,10 +20,11 @@
  (system base target)
  (ice-9 match))
 
-(compile-and-load
- (second (program-arguments))
- #:from meson
- #:to 'value)
+(parameterize ((%meson-current-directory (dirname (second (program-arguments)))))
+  (compile-and-load
+   (second (program-arguments))
+   #:from meson
+   #:to 'value))
 
 (define* (describe-meson #:optional (meson (%meson)))
   (format #t "meson project~%")
@@ -31,6 +32,6 @@
                      (format #t "var ~a: value: ~S~%" x (variable-ref n)))
                    (.variables meson))
   (hash-for-each (lambda (x n)
-                   (format #t "option ~a: value: ~a~%" x n)) (.options meson)))
+                   (format #t "option ~a: value: ~S~%" x n)) (.options meson)))
 
 (describe-meson)

@@ -88,7 +88,15 @@
     (when=> meson_version .meson-version)
     (when=> (list->set (ensure-list language)) .languages)
     (when=> version .version)
-    (when=>  (license-case license) .license))
+    (when=>  (license-case license) .license)
+    (when=> (%meson-current-directory) .root)
+    (when (and (.root meson)
+               (file-exists? (string-append (.root meson) "/" "meson_options.txt")))
+      (compile-and-load
+       (string-append (.root meson) "/" "meson_options.txt")
+       #:from (@ (language meson spec) meson)
+       #:to 'value
+       #:env (current-module))))
   (when default_options
     (let ((op(.options meson)))
       (for-each  (lambda (x)
@@ -96,6 +104,14 @@
                      ((name value ) (hash-set! op name value))))
                  (vector->list default_options))))
   (pk 'p name language version license default_options meson_version))
+
+(define*-public (option name #:key type description deprecated value choices)
+  (let ((op (.options (%meson))))
+    (hash-set! op name (make <option>
+                         #:name name
+                         #:value value
+                         #:type type
+                         #:description description))))
 
 (define* (%assert exp #:optional message)
   (pk 'assert exp message))
@@ -250,8 +266,10 @@
 
 (define*-public (get_option name)
   (assert (string? name))
-  (pk 'get_option name
-      (hash-ref (.options (%meson)) name 'get_option_no_found)))
+  (let ((v (hash-ref (.options (%meson)) name #f)))
+    (when v
+      (case (.type v)
+        ((string) (.value v))))))
 
 (define-public (!= a b)
   (not (equal? a b)))

@@ -14,6 +14,7 @@
             <lib>
             <run-result>
             <feature>
+            <option>
             configuration.table
             .version
             .meson-version
@@ -23,6 +24,9 @@
             .options
             .program
             .fount
+            .root
+            .type
+            .value
             .name))
 (define-class <dictionarie> ()
   (tb #:init-form (make-hash-table) #:getter .tb))
@@ -46,7 +50,7 @@
 (define (make-meson-default-optional-table)
   (define table(make-hash-table))
   (define (define! v b)
-    (hash-set! table v b))
+    (hash-set! table v (make <option> #:name v #:value b #:type "string")))
   (define! "prefix" "/usr")
   (define! "bindir" "/bin")
   (define! "sbindir" "/sbin")
@@ -56,13 +60,28 @@
   (define! "includedir" "include")
   (define! "sysconfdir" "/etc")
   table)
+
+(define-class <option> ()
+  (name #:init-keyword #:name #:getter .name)
+  (value #:init-keyword #:value  #:getter .value)
+  (type #:init-keyword #:type #:getter .type)
+  (description #:init-keyword #:description)
+  )
+
+(define-method (write (d <option>) port)
+  (format port "#<<option> '~a' type: '~a' ~x>"
+          (.name d)
+          (.type d)
+
+          (object-address d) ))
 (define-class <meson> ()
   (version #:accessor .version #:init-value #f)
   (license #:accessor .license #:init-value #f)
   (meson-version #:accessor .meson-version #:init-value "1.1.1")
   (options #:accessor .options #:init-form (make-meson-default-optional-table))
   (variables #:getter .variables #:init-form (make-module))
-  (languages #:accessor .languages #:init-value '()))
+  (languages #:accessor .languages #:init-value '())
+  (root #:accessor .root #:init-value #f))
 (define-method (initialize (m <meson>) opt)
   (let ((o (next-method)))
     (module-define! (.variables o) 'meson m)
@@ -83,3 +102,4 @@
   (table #:init-thunk make-hash-table #:getter configuration.table))
 
 (define-public %meson (make-parameter (make <meson>)))
+(define-public %meson-current-directory (make-parameter #f))
