@@ -1,4 +1,5 @@
 (define-module (meson function)
+  #:use-module (system base target)
   #:use-module (meson types)
   #:use-module (guix sets)
   #:use-module (system base compile)
@@ -51,7 +52,8 @@
             (meson-+ . +)
             (meson-format . format)
             (meson-error . error)
-            (meson-system . system)))
+            (meson-system . system)
+            (meson-cpu . cpu)))
 
 (define-public (%vector . args)
   (apply vector args))
@@ -322,14 +324,20 @@
 (define-method-public (set (o <env>) key value . args)
   (pk 'set-env))
 
-(define-method-public (cpu (o <build-machine>))
+(define-method (meson-cpu (o <build-machine>))
   "amd64")
 
 (define-method-public (cpu_family (o <build-machine>))
   "cpu_family")
 
+(define cpu-endianness (delay (@@ (system base target) cpu-endianness)))
 (define-method-public (endian (o <build-machine>))
-  "endian")
+  (let ((cpu (meson-cpu o))
+        (f (force cpu-endianness)))
+    (symbol->string
+     (f (match cpu
+          ("amd64" "x86_64")
+          (else cpu))))))
 
 (define-method (meson-system (o <build-machine>))
   "system")

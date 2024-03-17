@@ -21,6 +21,7 @@ message(libudev)
 message({'build mode' : get_option('mode')})
 
 message(build_machine.cpu())
+message(build_machine.endian())
 message(meson.project_license())
 meson_build_sh = find_program('meson.build', required : true)
 conf = configuration_data()
