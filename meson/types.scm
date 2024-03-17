@@ -16,6 +16,10 @@
             <feature>
             <meson-module>
             <option>
+            <build-target>
+            <host-machine>
+            <build-machine>
+            <target-machine>
             configuration.table
             .version
             .meson-version
@@ -72,6 +76,10 @@
   (description #:init-keyword #:description)
   )
 
+(define-class <build-machine> ())
+(define-class <host-machine> (<build-machine>))
+(define-class <target-machine> (<build-machine>))
+
 (define-method (write (d <option>) port)
   (format port "#<<option> '~a' type: '~a' ~x>"
           (.name d)
@@ -85,10 +93,17 @@
   (options #:accessor .options #:init-form (make-meson-default-optional-table))
   (variables #:getter .variables #:init-form (make-module))
   (languages #:accessor .languages #:init-value '())
-  (root #:accessor .root #:init-value #f))
+  (root #:accessor .root #:init-value #f)
+  (build-machine #:getter .build-machine #:init-thunk (lambda () (make <build-machine>)))
+  (host-machine #:getter .host-machine #:init-thunk (lambda () (make <host-machine>)))
+  (target-machine #:getter .target-machine #:init-thunk (lambda () (make <target-machine>))))
 (define-method (initialize (m <meson>) opt)
-  (let ((o (next-method)))
-    (module-define! (.variables o) 'meson m)
+  (let* ((o (next-method))
+         (variables (.variables o)))
+    (module-define! variables 'meson m)
+    (module-define! variables 'build_machine (.build-machine o))
+    (module-define! variables 'host_machine (.host-machine o))
+    (module-define! variables 'taregt_machine (.target-machine o))
     o))
 (define-class <env> ())
 (define-class <file> ()

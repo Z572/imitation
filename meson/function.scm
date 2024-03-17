@@ -50,7 +50,8 @@
             (meson-% . %)
             (meson-+ . +)
             (meson-format . format)
-            (meson-error . error)))
+            (meson-error . error)
+            (meson-system . system)))
 
 (define-public (%vector . args)
   (apply vector args))
@@ -289,7 +290,7 @@
           ("boolean" (.value v))
           ("integer" (.value v))
           (erro (error 'not-knoew! "t" erro)))
-        (error 'not-found! "t" name))
+        (error 'not-found! "I want to get ~a,but not option found" name))
     ))
 
 (define-public (!= a b)
@@ -320,6 +321,18 @@
 
 (define-method-public (set (o <env>) key value . args)
   (pk 'set-env))
+
+(define-method-public (cpu (o <build-machine>))
+  "amd64")
+
+(define-method-public (cpu_family (o <build-machine>))
+  "cpu_family")
+
+(define-method-public (endian (o <build-machine>))
+  "endian")
+
+(define-method (meson-system (o <build-machine>))
+  "system")
 
 (define-method-public (set (o <configuration-data>) key value . args)
   (apply (lambda* (#:key (description #f))
