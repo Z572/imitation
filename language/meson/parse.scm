@@ -249,6 +249,12 @@
     (or (and=> er-node (cut find-child <> proc))
         er-node)))
 
+(define (find-up-pos-is-0 node)
+  (let loop ((node node))
+    (if (zero? (cdr (ts-node-start-point node)))
+        node
+        (loop (ts-node-parent node)))))
+
 (define parser
   (delay (ts-parser-new
           #:language
@@ -282,7 +288,7 @@
         (let loop ((rn (ts-tree-root-node (ts-parser-parse-string (force parser) s))))
           (when (ts-node-has-error? rn)
             (and-let* ((n (find-child rn ts-node-has-error?))
-                       (parent (ts-node-parent n) ))
+                       (parent (find-up-pos-is-0 n) ))
               (format #t "I get a error!
 ~a
 ~a
