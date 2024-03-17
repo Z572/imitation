@@ -2,6 +2,7 @@
   #:use-module (ice-9 threads)
   #:use-module (ts)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-2)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
   #:use-module (srfi srfi-171)
@@ -14,6 +15,7 @@
   #:use-module (system base language)
   #:use-module (system base compile)
   #:use-module (system base target)
+  #:use-module (meson types)
   #:use-module (ice-9 match)
   #:use-module (language tree-il)
   #:export (parse-meson
@@ -258,8 +260,9 @@
   (string-join
    (cons (if (zero? bg)
              "-8<---------------------------------------------->8-"
-             "...
--8<---------------------------------------------->8-")
+             (string-append "     |" (%meson-current-directory) "/meson.build"
+                            "
+-8<--+------------------------------------------->8-"))
          (vector->list
           (vector-map (lambda (n x) (string-append (number->string (+ bg n)) " |" x))
                       (list->vector (string-split str char)))))
@@ -277,8 +280,8 @@
         the-eof-object
         (let loop ((rn (ts-tree-root-node (ts-parser-parse-string (force parser) s))))
           (when (ts-node-has-error? rn)
-            (let* ((n (find-child rn ts-node-has-error?))
-                   (parent (ts-node-parent n) ))
+            (and-let* ((n (find-child rn ts-node-has-error?))
+                       (parent (ts-node-parent n) ))
               (format #t "I get a error!
 ~a
 ~a
@@ -296,7 +299,8 @@
 
                       (node-string n)
                       (ts-node-start-point n) (ts-node-end-point n))
-              (exit 1 ))
+              ;; (exit 1 )
+              )
             )
           (let ((childs (ts-node-childs rn #t)))
             (if (null? childs)
