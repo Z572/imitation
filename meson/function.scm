@@ -325,10 +325,10 @@
   (pk 'set-env))
 
 (define-method (meson-cpu (o <build-machine>))
-  "amd64")
+  (target-cpu))
 
 (define-method-public (cpu_family (o <build-machine>))
-  "cpu_family")
+  "amd64")
 
 (define cpu-endianness (delay (@@ (system base target) cpu-endianness)))
 (define-method-public (endian (o <build-machine>))
@@ -358,6 +358,16 @@
 
 (define-method-public (get (o <configuration-data>) key . args)
   (assoc-ref (hash-ref (configuration.table o) key) 'value))
+
+(define-method (get (o <dictionarie>) key fallback)
+  (dictionarie-get o key fallback))
+(define-method (get (o <dictionarie>) key)
+  (dictionarie-get o key))
+(define-method-public (keys (o <dictionarie>))
+  (dictionarie-keys o))
+
+(define-method-public (has_key (o <dictionarie>) str)
+  (dictionarie-has-key o str))
 
 (define-method-public (startswith (o <string>) start)
   (string-prefix? start o))
