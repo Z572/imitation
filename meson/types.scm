@@ -52,8 +52,7 @@
   (not (equal? 'not-found
                (dictionarie-get dictionarie key 'not-found))))
 (define*-public (dictionarie-keys dictionarie)
-  (list->vector
-   (hash-map->list (lambda (k v) k) (.tb dictionarie))))
+  (hash-map->list (lambda (k v) k) (.tb dictionarie)))
 
 (define-class* <compiler> ())
 (define-class* <c-compiler> (<compiler>))

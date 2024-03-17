@@ -55,14 +55,12 @@
             (meson-system . system)
             (meson-cpu . cpu)))
 
-(define-public (%vector . args)
-  (apply vector args))
 (define-public (%relational kw i o)
   (match kw
     ('(not in)
      (not (%relational '(in) i o)))
     ('(in)
-     (->bool (member i (vector->list (pk '%relational o)))))))
+     (->bool (member i (pk '%relational o))))))
 
 (define (license-case str)
   (match str
@@ -106,7 +104,7 @@
                    (match (string-split x #\=)
                      ((name value )
                       (hash-set! op name (make <option> #:name name #:value value #:type "string")))))
-                 (vector->list default_options))))
+                 default_options)))
   (pk 'p name language version license default_options meson_version))
 
 (define*-public (option name #:key
@@ -118,7 +116,7 @@
                          (match type
                            ("string" "")
                            ("feature" (make <feature>))
-                           ("combo" (vector-ref choices 0))
+                           ("combo" (list-ref choices 0))
                            ("boolean" #t)
                            ("integer" 0)
                            (erro (error 'not-knoew! "t" erro)))))
@@ -421,8 +419,8 @@
 (define-method-public (meson-+ (str1 <string>) (str2 <string>))
   (string-append str1  str2))
 
-(define-method-public (meson-+ (str1 <vector>) (str2 <string>))
-  (list->vector (append (vector->list str1) (list str2)))  )
+(define-method-public (meson-+ (str1 <list>) (str2 <string>))
+  (append str1 (list str2)))
 
 (define-method-public (meson-error str1)
   (error 'meson-error str1))
@@ -445,9 +443,6 @@
 (define-method-public (found (f <dependency>))
   (pk 'found-dep f)
   #t)
-
-(define-method-public (%subscript (vc <vector>) index)
-  (vector-ref vc index))
 
 (define-method-public (%subscript (vc <list>) index)
   (list-ref vc index))
