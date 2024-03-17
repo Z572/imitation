@@ -49,7 +49,7 @@
 (define-class <feature> ())
 (define-class <run-result> ())
 (define-method (write (d <dependency>) port)
-  (format port "#<dependency '~a' ~x>" (.name d) (object-address d) ))
+  (format port "#<<dependency> '~a' ~x>" (.name d) (object-address d) ))
 (define (make-meson-default-optional-table)
   (define table(make-hash-table))
   (define (define! v b)
