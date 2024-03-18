@@ -141,7 +141,7 @@
                   ((_ name . args)
                    (values name args)))))
        `(method-call
-         ,f ,(retrans id)
+         ,(retrans id) ,f
          ,@b)))
     (("string_literal" b)
      (substring b 1 (- (string-length b) 1)))
@@ -204,8 +204,11 @@
 
     (('%call id ass ...)
      (make-call loc (rerun id) (map rerun ass)))
-    (('method-call f obj args ...)
-     (make-call loc (rerun f) (map rerun (cons* obj args ))))
+    (('method-call obj f args ...)
+     (make-call loc
+                (rerun `(f-id meson-method-call))
+                ;; (rerun f)
+                (map rerun (cons* obj f args ))))
     (('%subscript id index)
      (make-call loc (rerun `(f-id %subscript)) (map rerun (list id index))))
     (('%assignment '= (and name (? symbol?)) value)

@@ -63,6 +63,10 @@
     ('(in)
      (->bool (member i (pk '%relational o))))))
 
+(define*-public (meson-method-call object func . args)
+  (pk 'method-call object func args)
+  (apply func object args))
+
 (define (license-case str)
   (match str
     ("LGPLv2+" license:lgpl2.0+)
