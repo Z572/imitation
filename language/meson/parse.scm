@@ -153,16 +153,23 @@
     (else
      `(uh ,exp))))
 
+(define (location x)
+  (and (pair? x)
+       (let ((props (source-properties x)))
+         (and (pair? props) props))))
 (define-public (meson-ast->tree-il exp)
   (define rerun meson-ast->tree-il)
-  (define loc #f)
+  (define loc (location exp))
+  (pk 'loc loc)
   (match exp
     (('build-definition body ...)
      (list->seq loc (append (map rerun body)
-                            (list (make-call
-                                   loc
-                                   (make-module-ref loc '(meson types) '%meson #t)
-                                   '())))))
+                            '()
+                            ;; (list (make-call
+                            ;;        loc
+                            ;;        (make-module-ref loc '(meson types) '%meson #t)
+                            ;;        '()))
+                            )))
     (('begin body ...)
      (list->seq loc (map rerun body)))
     (#t (make-const loc #t))
@@ -263,17 +270,15 @@
            "libtree-sitter-meson.so"
            "tree_sitter_meson"))))
 
-(define* (skfjdsfjs str #:optional (char #\newline) #:key (bg 0))
-  (string-join
-   (cons (if (zero? bg)
-             "-8<---------------------------------------------->8-"
-             (string-append "     |" (%meson-current-directory) "/meson.build"
-                            "
+(define* (skfjdsfjs str #:key (bg 0))
+  (cons (if (zero? bg)
+            "-8<---------------------------------------------->8-"
+            (string-append "     |" (%meson-current-directory) "/meson.build"
+                           "
 -8<--+------------------------------------------->8-"))
-         (vector->list
-          (vector-map (lambda (n x) (string-append (number->string (+ bg n)) " |" x))
-                      (list->vector (string-split str char)))))
-   (string char)))
+        (vector->list
+         (vector-map (lambda (n x) (string-append (number->string (+ bg n)) " |" x))
+                     (list->vector (string-split str #\newline))))))
 
 (define (read-meson port env)
   (let ((s (get-string-all port)))
@@ -294,9 +299,11 @@
 ~a
 ~S ~a--~a
 "
-                      (skfjdsfjs (node-string parent)
-                                 #\newline
-                                 #:bg (car (ts-node-start-point parent)))
+                      (string-join
+                       (skfjdsfjs (node-string parent)
+                                  #:bg (car (ts-node-start-point parent)))
+                       "\n")
+
                       (string-join (map (lambda (str)
 
                                           (string-append (make-string (+ 4 (cdr (ts-node-start-point n))) #\space)
