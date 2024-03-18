@@ -13,7 +13,6 @@
  (guix packages))
 
 (define-public tree-sitter-meson
-  ;; tag 1.2 is Aug 24,2022  this commit is Feb 28,2023
   (let ((commit "45a11dc585c73aa104c21a6ddb12d0b822f7dda8")
         (revision "0"))
     ((@@ (gnu packages tree-sitter)tree-sitter-grammar)
