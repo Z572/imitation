@@ -41,7 +41,9 @@
             .value
             .module
             .name
-            .dependencys)
+            .dependencys
+            meson-targets
+            .targets)
   #:export (define-class*))
 
 (define-syntax-rule (define-class* a ...)
@@ -74,11 +76,22 @@
   (module #:init-keyword #:module #:getter .module))
 (define-method (write (d <meson-module>) port)
   (format port "#<<meson-module> ~a ~x>" (or (module-name (.module d)) "unknown-name!") (object-address d) ))
-(define-class* <meson-target> ())
-
+(define-class* <meson-target> ()
+  (name #:init-keyword #:name #:getter .name #:init-value #f))
+(define-method (initialize (m <meson-target>) args)
+  (let ((o (next-method))
+        (meson (%meson)))
+    (set! (.targets meson)
+          (set-insert m (.targets meson)))
+    o)
+  )
+(define-method (write (d <meson-target>) port)
+  (format port "#<~a ~a ~x>" (class-name(class-of d))
+          (or (.name d) "unknown-name!") (object-address d) ))
+(define (meson-targets m)
+  (set->list (.targets m)))
 (define-class* <alias-target> (<meson-target>))
 (define-class* <build-target> (<meson-target>)
-  (name #:init-keyword #:name #:getter .name)
   (dependencys #:init-keyword #:dependencys #:getter .dependencys))
 
 (define-class* <custom-target> (<meson-target>))
@@ -139,7 +152,8 @@
   (root #:accessor .root #:init-value #f)
   (build-machine #:getter .build-machine #:init-thunk (lambda () (make <build-machine>)))
   (host-machine #:getter .host-machine #:init-thunk (lambda () (make <host-machine>)))
-  (target-machine #:getter .target-machine #:init-thunk (lambda () (make <target-machine>))))
+  (target-machine #:getter .target-machine #:init-thunk (lambda () (make <target-machine>)))
+  (targets #:accessor .targets #:init-value (list->set '())))
 
 (define-public (meson-name m)
   (.name m))

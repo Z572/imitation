@@ -37,6 +37,9 @@
                      (format #t "var ~a: value: ~S~%" x (variable-ref n)))
                    (.variables meson))
   (hash-for-each (lambda (x n)
-                   (format #t "option ~a: value: ~S~%" x n)) (.options meson)))
+                   (format #t "option ~a: value: ~S~%" x n)) (.options meson))
+  (for-each (lambda (x)
+              (format #t "target ~a~%" x))
+            (meson-targets meson)))
 
 (describe-meson)

@@ -258,7 +258,7 @@
                   version
                   #:allow-other-keys)
   (pk 'library a source 'dependencies dependencies)
-  (make <lib> #:dependencies dependencies))
+  (make <lib> #:name a #:dependencies dependencies))
 
 (define*-public (shared_library a
                                 source
@@ -294,7 +294,7 @@
                                 #:allow-other-keys
                                 #:rest rest)
   (pk 'shared_library a source 'dependencies dependencies)
-  (make <lib>))
+  (make <lib> #:name a #:dependencies dependencies))
 
 (define*-public (executable a
                             #:key
@@ -416,9 +416,14 @@
 
 (define-method-public (set (o <env>) key value . args)
   (pk 'set-env))
-(define*-public (custom_target #:rest rest)
+(define*-public (custom_target name
+                               #:key (dependencies '())
+                               input
+                               command
+                               output
+                               #:rest rest)
   (pk 'current-output-port rest)
-  (make <custom-target>))
+  (make <custom-target> #:name name #:dependencies dependencies))
 
 (define-method (meson-cpu (o <build-machine>))
   (target-cpu))
