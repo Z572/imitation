@@ -70,9 +70,16 @@
 
 (define-class* <meson-module> ()
   (module #:init-keyword #:module #:getter .module))
-(define-class* <build-target> ()
+
+(define-class* <meson-target> ())
+
+(define-class* <alias-target> (<meson-target>))
+(define-class* <build-target> (<meson-target>)
   (name #:init-keyword #:name #:getter .name)
   (dependencys #:init-keyword #:dependencys #:getter .dependencys))
+
+(define-class* <custom-target> (<meson-target>))
+(define-class* <run-target> (<meson-target>))
 
 (define-class* <range> ()
   (start #:init-keyword #:start #:init-value 0)
