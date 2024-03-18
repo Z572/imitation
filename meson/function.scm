@@ -1,4 +1,5 @@
 (define-module (meson function)
+  #:use-module (srfi srfi-1)
   #:use-module (imitation utils)
   #:use-module (meson compiler)
   #:use-module (system base target)
@@ -290,7 +291,8 @@
                                 sources
                                 soversion
                                 version
-                                #:allow-other-keys)
+                                #:allow-other-keys
+                                #:rest rest)
   (pk 'shared_library a source 'dependencies dependencies)
   (make <lib>))
 
@@ -354,9 +356,12 @@
 
 (define*-public (find_program path #:key (required #t) (default_optinos '()))
   (pk 'find_program required)
-  (make <external-program>
-    #:program
-    (search-path (cons "." (parse-path (getenv "PATH"))) path)))
+  (let ((paths (ensure-list path)))
+    (make <external-program>
+      #:program
+      (any (lambda (path)
+             (search-path (cons "." (parse-path (getenv "PATH"))) path))
+           paths))))
 
 (define*-public (get_option name)
   (assert (string? name))
@@ -397,18 +402,36 @@
   (assert (is-a? meson <meson>))
   (.version meson))
 
+(define*-public (project_name meson)
+  (assert (is-a? meson <meson>))
+  (.name meson))
+
 (define* (meson-version meson)
   (assert (is-a? meson <meson>))
   (.meson-version meson))
 
+(define-public (source_root meson)
+  (assert (is-a? meson <meson>))
+  (.root meson))
+
 (define-method-public (set (o <env>) key value . args)
   (pk 'set-env))
+(define*-public (custom_target #:rest rest)
+  (pk 'current-output-port rest)
+  (make <custom-target>))
 
 (define-method (meson-cpu (o <build-machine>))
   (target-cpu))
 
 (define-method-public (cpu_family (o <build-machine>))
   "amd64")
+
+(define*-public (configure_file #:key capture
+                                input
+                                output
+                                configuration
+                                #:rest rest)
+  (make <file> #:name "no exits configure_file"))
 
 (define cpu-endianness (delay (@@ (system base target) cpu-endianness)))
 (define-method-public (endian (o <build-machine>))
@@ -547,6 +570,32 @@
   (pk 'found-dep f)
   #t)
 
+(define-method-public (full_path (f <exe>))
+  (pk 'full_path f)
+  "full_path")
+
+(define-method-public (path (f <external-program>))
+  (pk 'path f)
+  "path")
+
+(define*-public (install_data
+                 d
+
+                 #:key
+                 install_dir)
+  (pk 'install_data d)
+  "")
+
+(define*-public (get_pkgconfig_variable
+                 d
+                 var-name
+                 #:key
+                 default
+                 define_variable)
+  (assert (is-a? d <dependency>))
+  (pk 'get_pkgconfig_variable d var-name)
+  "get_pkgconfig_variable")
+
 (define-method-public (%subscript (vc <list>) index)
   (list-ref vc index))
 
@@ -565,9 +614,11 @@
   "auto"
   #t)
 (define-method-public (current_source_dir (m <meson>))
-  (pk 'current_source_dir))
+  (pk 'current_source_dir)
+  (.root m))
 (define-method-public (current_build_dir (m <meson>))
-  (pk 'current_source_dir))
+  (pk 'current_build_dir)
+  "wttff")
 
 (define*-public (meson-format s . arg)
   (pk s 'meson-format "meson-format"))
@@ -594,7 +645,8 @@
   (with-directory-excursion cwd
     (parameterize ((%meson-current-directory (getcwd)))
       (with-exception-handler
-          (lambda (e) (raise-exception e))
+          (lambda (e)
+            (pk 'cwd cwd)(raise-exception e))
         (lambda ()
           (call-with-prompt 'subdir_done
             (lambda ()

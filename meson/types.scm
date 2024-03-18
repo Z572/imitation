@@ -20,6 +20,7 @@
             <meson-module>
             <option>
             <build-target>
+            <custom-target>
             <host-machine>
             <build-machine>
             <target-machine>
@@ -155,6 +156,9 @@
 (define-class* <env> ())
 (define-class* <file> ()
   (name #:init-keyword #:name #:getter .name))
+
+(define-method (write (d <file>) port)
+  (format port "#<<file> '~a' ~x>" (.name d) (object-address d) ))
 
 (define-class* <external-program> ()
   (program #:init-value #f #:init-keyword #:program #:accessor .program)
