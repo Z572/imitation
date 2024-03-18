@@ -71,7 +71,8 @@
 
 (define-class* <meson-module> ()
   (module #:init-keyword #:module #:getter .module))
-
+(define-method (write (d <meson-module>) port)
+  (format port "#<<meson-module> ~a ~x>" (or (module-name (.module d)) "unknown-name!") (object-address d) ))
 (define-class* <meson-target> ())
 
 (define-class* <alias-target> (<meson-target>))

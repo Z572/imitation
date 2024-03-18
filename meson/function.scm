@@ -72,7 +72,6 @@
   (resolve-interface '(meson function)))
 
 (define*-public (meson-method-call object func . args)
-  (pk 'method-call object func args)
   (define is-module (is-a? object <meson-module>))
   (let ((func* (module-ref (if is-module
                                (.module object)
@@ -595,9 +594,7 @@
   (with-directory-excursion cwd
     (parameterize ((%meson-current-directory (getcwd)))
       (with-exception-handler
-          (lambda (e)
-            (pk 'sub cwd e)
-            (raise-exception e))
+          (lambda (e) (raise-exception e))
         (lambda ()
           (call-with-prompt 'subdir_done
             (lambda ()
