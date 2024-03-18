@@ -123,6 +123,9 @@
     (("unary_expression" ("unary_operator" (op op)) expr)
      ;; not
      `(,(string->symbol op) ,(retrans expr)))
+    (("unary_expression" ("unary_operator" "-") expr)
+     ;; -
+     `(- ,(retrans expr)))
     (("relational_expression" id ("relational_operator" (op op) ...) v)
      `(%relational ,(map string->symbol op) ,(retrans id) ,(retrans v)  ))
     (("relational_expression" id ("relational_operator" op) v)
@@ -195,6 +198,9 @@
      (make-conditional loc (rerun v1) (rerun v1) (rerun v2)))
     (((and (or '/ '% '+ '-) v) v1 v2)
      (make-call loc (rerun `(f-id ,v)) (map rerun (list v1 v2))))
+
+    (((and '- v) v1)
+     (make-call loc (rerun `(f-id ,v)) (map rerun (list v1))))
 
     (('%call id ass ...)
      (make-call loc (rerun id) (map rerun ass)))

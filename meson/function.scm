@@ -417,6 +417,9 @@
   (string-append str1 "/" str2))
 
 
+(define-method-public (meson-- (n1 <number>))
+  (- n1))
+
 (define-method-public (meson-- (n1 <number>) (n2 <number>))
   (- n1 n2))
 
@@ -426,8 +429,8 @@
 (define-method-public (meson-+ (str1 <string>) (str2 <string>))
   (string-append str1  str2))
 
-(define-method-public (meson-+ (str1 <list>) (str2 <string>))
-  (append str1 (list str2)))
+(define-method-public (meson-+ (str1 <list>) s)
+  (append str1 (list s)))
 
 (define-method-public (meson-error str1)
   (error 'meson-error str1))
