@@ -98,7 +98,7 @@
                          #:key
                          version
                          (license '())
-                         (default_options #())
+                         (default_options '())
                          meson_version
                          )
   (define meson (%meson))

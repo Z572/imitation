@@ -106,7 +106,7 @@
   (define! "infodir" "share/info")
   (define! "includedir" "include")
   (define! "sysconfdir" "/etc")
-  (define! "c_args" #())
+  (define! "c_args" (list))
   table)
 
 (define-class* <option> ()
