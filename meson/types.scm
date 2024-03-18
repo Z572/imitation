@@ -47,7 +47,9 @@
 (define (make-dictionarie . l)
   (let* ((d (make <dictionarie>))
          (tb (.tb d)))
-    (for-each (match-lambda ((v b) (hash-set! tb v b)))l )
+    (for-each
+     (match-lambda (((? string? v) b) (hash-set! tb v b)))
+     l)
     d))
 (define*-public (dictionarie-get dictionarie key #:optional fallback)
   (hash-ref (.tb dictionarie) key fallback))
