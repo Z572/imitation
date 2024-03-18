@@ -93,10 +93,10 @@
 (define-class* <target-machine> (<build-machine>))
 
 (define-method (write (d <option>) port)
-  (format port "#<<option> '~a' type: '~a' ~x>"
+  (format port "#<<option> '~a' type: '~a' value: '~S'~x>"
           (.name d)
           (.type d)
-
+          (.value d)
           (object-address d) ))
 (define-class* <meson> ()
   (version #:accessor .version #:init-value #f)
