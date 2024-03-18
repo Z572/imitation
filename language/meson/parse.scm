@@ -224,16 +224,16 @@
     (((and '- v) v1)
      (make-call loc (f-id v) (map rerun (list v1))))
 
-    (('%call id n ass)
+    (('%call ('f-id f) n ass)
      (make-call
       loc
       (rerun `(f-id meson-call))
-      (list  (rerun id)
-             (make-call loc (mk-ts-list loc)
-                        (map rerun n))
-             (make-call loc (mk-ts-list loc)
+      (list (make-const loc f)
+            (make-call loc (mk-ts-list loc)
+                       (map rerun n))
+            (make-call loc (mk-ts-list loc)
 
-                        (map rerun ass)))))
+                       (map rerun ass)))))
     (('method-call obj f args ...)
      (make-call loc
                 (f-id 'meson-method-call)

@@ -80,7 +80,10 @@
         (error 'no-method-found (format #f "no method call '~a'" func)))))
 
 (define*-public (meson-call func args kwargs)
-  (apply func (append args kwargs)))
+  (let ((f (module-ref (current-module*) func #f)))
+    (if f
+        (apply f (append args kwargs))
+        (error 'no-func-found (format #f "no func call '~a'" func)))))
 
 (define (license-case str)
   (match str
@@ -190,7 +193,10 @@
                             not_found_message
                             (required #t)
                             (static #f)
-                            version)
+                            version
+                            #:allow-other-keys
+                            #:rest rest)
+  ;; rest e.g. #:modules
   (make <dependency> #:name name))
 (define*-public (include_directories a . o)
   (pk 'include_directories))
