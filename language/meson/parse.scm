@@ -207,8 +207,14 @@
     (('method-call obj f args ...)
      (make-call loc
                 (rerun `(f-id meson-method-call))
-                ;; (rerun f)
-                (map rerun (cons* obj f args ))))
+                (cons*
+                 (rerun obj)
+                 (make-const
+                  loc
+                  (match f
+                    (('f-id u)
+                     u)))
+                 (map rerun args))))
     (('%subscript id index)
      (make-call loc (rerun `(f-id %subscript)) (map rerun (list id index))))
     (('%assignment '= (and name (? symbol?)) value)
