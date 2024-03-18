@@ -557,16 +557,6 @@
 (define-method-public (returncode ( r <run-result>))
   (pk 'returncode)
   0)
-(define-syntax-rule (with-directory-excursion dir body ...)
-  "Run BODY with DIR as the process's current directory."
-  (let ((init (getcwd)))
-    (dynamic-wind
-      (lambda ()
-        (chdir dir))
-      (lambda ()
-        body ...)
-      (lambda ()
-        (chdir init)))))
 
 (define-public (subdir dir)
   (with-directory-excursion dir
