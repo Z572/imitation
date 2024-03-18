@@ -4,6 +4,7 @@
   #:use-module (srfi srfi-16)
   #:use-module (guix sets)
   #:use-module (system base compile)
+  #:use-module (ice-9 format)
   #:use-module (ice-9 optargs)
   #:use-module (oop goops)
   #:use-module (oop goops describe)
@@ -165,6 +166,8 @@
       section
       ))
 
+(define-public (warning text . rest)
+  (format (current-output-port) "WARNING: '~S' '~S'~%" text rest))
 (define*-public (message arg)
   (pk 'message arg)
   (format #t "message: ~a~%" arg))
