@@ -50,6 +50,7 @@
             (meson-/ . /)
             (meson-% . %)
             (meson-+ . +)
+            (meson-- . -)
             (meson-format . format)
             (meson-error . error)
             (meson-system . system)
@@ -415,6 +416,12 @@
 (define-method-public (meson-/ (str1 <string>) (str2 <string>))
   (string-append str1 "/" str2))
 
+
+(define-method-public (meson-- (n1 <number>) (n2 <number>))
+  (- n1 n2))
+
+(define-method-public (meson-+ (n1 <number>) (n2 <number>))
+  (+ n1 n2))
 
 (define-method-public (meson-+ (str1 <string>) (str2 <string>))
   (string-append str1  str2))
