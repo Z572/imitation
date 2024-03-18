@@ -559,8 +559,7 @@
   0)
 
 (define-public (subdir dir)
-  (with-directory-excursion dir
-    (pk 'subdir dir)
+  (with-directory-excursion (string-append (.root (%meson)) "/" dir)
     (call-with-prompt 'subdir_done
       (lambda ()
         (compile-and-load
