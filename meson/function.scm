@@ -58,7 +58,8 @@
             (meson-format . format)
             (meson-error . error)
             (meson-system . system)
-            (meson-cpu . cpu)))
+            (meson-cpu . cpu)
+            (meson-version . version)))
 
 (define-public (%relational kw i o)
   (match kw
@@ -78,13 +79,29 @@
                                (current-module*))
                            func #f)))
     (if func*
-        (apply func* (append (if is-module '() (list object)) args))
-        (error 'no-method-found (format #f "no method call '~a'" func)))))
+        (with-exception-handler
+            (lambda (e)
+              (pk 'method-error-on func
+                  e)
+              (raise-exception e))
+          (lambda ()
+            (apply func* (append (if is-module '() (list object)) args)))
+          #:unwind? #t)
+
+        (error 'no-method-found
+               (format #f "object '~a' no method call '~a'" object func)))))
 
 (define*-public (meson-call func args kwargs)
   (let ((f (module-ref (current-module*) func #f)))
     (if f
-        (apply f (append args kwargs))
+        (with-exception-handler
+            (lambda (e)
+              (pk 'error-on func
+                  e)
+              (raise-exception e))
+          (lambda ()
+            (apply f (append args kwargs)))
+          #:unwind? #t)
         (error 'no-func-found (format #f "no func call '~a'" func)))))
 
 (define (license-case str)
@@ -374,6 +391,10 @@
   (assert (is-a? meson <meson>))
   (.version meson))
 
+(define* (meson-version meson)
+  (assert (is-a? meson <meson>))
+  (.meson-version meson))
+
 (define-method-public (set (o <env>) key value . args)
   (pk 'set-env))
 
@@ -476,10 +497,11 @@
 (define-method (meson-/ (v1 <number>) (v2 <number>))
   (/ v1 v2))
 
-
+(define-public (join_paths . paths)
+  (string-join paths "/"))
 
 (define-method-public (meson-/ (str1 <string>) (str2 <string>))
-  (string-append str1 "/" str2))
+  (join_paths str1 str2))
 
 
 (define-method-public (meson-- (n1 <number>))
