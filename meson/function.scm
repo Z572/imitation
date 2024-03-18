@@ -97,7 +97,7 @@
                          #:optional (language '())
                          #:key
                          version
-                         (license #f)
+                         (license '())
                          (default_options #())
                          meson_version
                          )
@@ -112,7 +112,7 @@
     (when=> meson_version .meson-version)
     (when=> (list->set (ensure-list language)) .languages)
     (when=> version .version)
-    (when=>  (license-case license) .license)
+    (when=>  (map license-case (ensure-list license)) .license)
     (when=> (%meson-current-directory) .root)
     (when (and (.root meson)
                (file-exists? (string-append (.root meson) "/" "meson_options.txt")))
