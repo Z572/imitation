@@ -427,6 +427,14 @@
 (define-public (set_variable name value)
   (%assignment (string->symbol name) value))
 
+(define-public (unset_variable name)
+  (let ((n (string->symbol name))
+        (hm (.variables (%meson))))
+    (if (module-defined? hm n)
+
+        (module-remove! hm n)
+        (error 'remove-removed! name))))
+
 (define-public (%assignment+= name value)
   (let ((hm (.variables (%meson))))
     (if (module-defined? hm name)

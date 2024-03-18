@@ -13,7 +13,8 @@ project('systemd', 'c',
         meson_version : '>= 0.60.0',
        )
 warning('sdfdsf',[1 ,2],'end')
-set_variable('fdaf', 2)
+set_variable('bb', 2)
+unset_variable('bb')
 libsystemd_version = '0.37.0'
 libudev_version = '1.7.7'
 libudev = 20
