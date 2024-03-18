@@ -294,8 +294,26 @@
 
 (define*-public (test a . o)
   (pk 'test))
-(define*-public (declare_dependency a . o)
-  (pk 'declare_dependency)  )
+(define*-public (declare_dependency
+                 #:key
+                 compile_args
+                 d_import_dirs
+                 d_module_versions
+                 dependencies
+                 extra_files
+                 include_directories
+                 link_args
+                 link_whole
+                 link_with
+                 objects
+                 sources
+                 variables
+                 version)
+  (pk 'declare_dependency)
+  (make <dependency>
+    #:dependencys dependencies
+    #:sources sources))
+
 (define*-public (install_headers a . o)
   (pk 'install_headers)  )
 (define*-public (import a . o)

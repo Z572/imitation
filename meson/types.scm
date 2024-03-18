@@ -66,7 +66,7 @@
 
 (define-class* <compiler> ())
 (define-class* <dependency> ()
-  (name #:getter .name #:init-keyword #:name))
+  (name #:getter .name #:init-keyword #:name #:init-value #f))
 
 (define-class* <meson-module> ()
   (module #:init-keyword #:module #:getter .module))
@@ -84,7 +84,7 @@
 (define-class* <feature> ())
 (define-class* <run-result> ())
 (define-method (write (d <dependency>) port)
-  (format port "#<<dependency> '~a' ~x>" (.name d) (object-address d) ))
+  (format port "#<<dependency> '~a' ~x>" (or (.name d) "unknown-name!") (object-address d) ))
 
 (define (make-meson-default-optional-table)
   (define table(make-hash-table))
