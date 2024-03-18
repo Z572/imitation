@@ -1,4 +1,6 @@
 (define-module (language meson parse)
+  #:use-module (texinfo string-utils)
+  #:use-module (srfi srfi-71)
   #:use-module (ice-9 threads)
   #:use-module (ts)
   #:use-module (srfi srfi-1)
@@ -315,15 +317,26 @@
            "libtree-sitter-meson.so"
            "tree_sitter_meson"))))
 
-(define* (skfjdsfjs str #:key (bg 0))
+(define* (skfjdsfjs str #:key (bg 0)
+                    (err #f)
+                    (before 0))
   (cons (if (zero? bg)
             "-8<---------------------------------------------->8-"
-            (string-append "     |" (%meson-current-directory) "/meson.build"
-                           "
--8<--+------------------------------------------->8-"))
-        (vector->list
-         (vector-map (lambda (n x) (string-append (number->string (+ bg n)) " |" x))
-                     (list->vector (string-split str #\newline))))))
+            (string-append "    |" (%meson-current-directory) "/meson.build"
+                           "\n"
+                           (center-string "ctx" 80 #\=)
+                           ))
+        (let ((be af (split-at (vector->list
+                                (vector-map
+                                 (lambda (n x)
+                                   (string-append
+                                    (left-justify-string
+                                     (number->string (+ bg n))
+                                     4)
+                                    "|" x))
+                                 (list->vector (string-split str #\newline))))
+                               (1+ (- before bg)))))
+          (append be err af))))
 
 (define (read-meson port env)
   (let ((s (get-string-all port)))
@@ -341,27 +354,29 @@
                        (parent (find-up-pos-is-0 n) )
                        (start (ts-node-start-point n))
                        (end (ts-node-end-point n)))
-              (format #t "I get a error!
-~a
-~a
+              (format #t "~a
 ~S ~a--~a
 "
                       (string-join
                        (skfjdsfjs (node-string parent)
-                                  #:bg (car (ts-node-start-point parent)))
-                       "\n")
+                                  #:bg (car (ts-node-start-point parent))
+                                  #:err (map (lambda (str)
 
-                      (string-join (map (lambda (str)
-
-                                          (string-append (make-string (+ 3 (cdr (ts-node-start-point n))) #\space)
-                                                         str
-                                                         "\n"))
-                                        (list (make-string
+                                               (string-append
+                                                (make-string (+ 1 4 (cdr (ts-node-start-point n))) #\space)
+                                                str
+                                                ))
+                                             (list
+                                              (make-string
                                                (if (= (car start) (car end))
                                                    (- (cdr end) (cdr start))
                                                    20)
                                                #\^)
-                                              "I think is this is a error")))
+                                              "I think is this is a error"))
+                                  #:before (car start))
+                       "\n")
+
+
 
                       (node-string n)
                       (ts-node-start-point n) (ts-node-end-point n))
