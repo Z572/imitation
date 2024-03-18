@@ -424,6 +424,9 @@
         ;; (error 'redefine! "")
         (module-define! hm name value))))
 
+(define-public (set_variable name value)
+  (%assignment (string->symbol name) value))
+
 (define-public (%assignment+= name value)
   (let ((hm (.variables (%meson))))
     (if (module-defined? hm name)
