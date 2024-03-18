@@ -68,12 +68,14 @@
 
 (define*-public (meson-method-call object func . args)
   (pk 'method-call object func args)
-  (if (is-a? object <meson-module>)
-      (error 'no-impl "no module method call impl!")
-      (let ((func* (module-ref (current-module*) func #f)))
-        (if func*
-            (apply func* object args)
-            (error 'no-method-found (format #f "no method call '~a'" func))))))
+  (define is-module (is-a? object <meson-module>))
+  (let ((func* (module-ref (if is-module
+                               (.module object)
+                               (current-module*))
+                           func #f)))
+    (if func*
+        (apply func* (append (if is-module '() (list object)) args))
+        (error 'no-method-found (format #f "no method call '~a'" func)))))
 
 (define (license-case str)
   (match str
@@ -278,7 +280,9 @@
   (pk 'install_headers)  )
 (define*-public (import a . o)
   (pk 'import)
-  (make <meson-module>))
+  (let ((m (resolve-interface `(meson module ,(string->symbol a)))))
+    (make <meson-module>
+      #:module m)))
 (define*-public (generate a . o)
   (pk 'generate)  )
 

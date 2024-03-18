@@ -34,6 +34,7 @@
             .root
             .type
             .value
+            .module
             .name))
 (define-syntax-rule (define-class* a ...)
   (define-class a ...
@@ -59,7 +60,8 @@
 (define-class* <dependency> ()
   (name #:getter .name #:init-keyword #:name))
 
-(define-class* <meson-module> ())
+(define-class* <meson-module> ()
+  (module #:init-keyword #:module #:getter .module))
 (define-class* <build-target> ())
 (define-class* <lib> (<build-target>))
 (define-class* <feature> ())
