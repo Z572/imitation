@@ -23,6 +23,7 @@
             <target-machine>
             <dictionarie>
             <exe>
+            <range>
             configuration.table
             .version
             .meson-version
@@ -69,6 +70,12 @@
 (define-class* <build-target> ()
   (name #:init-keyword #:name #:getter .name)
   (dependencys #:init-keyword #:dependencys #:getter .dependencys))
+
+(define-class* <range> ()
+  (start #:init-keyword #:start #:init-value 0)
+  (stop #:init-keyword #:stop)
+  (step #:init-keyword #:step #:init-value 1))
+
 (define-class* <lib> (<build-target>))
 (define-class* <exe> (<build-target>))
 (define-class* <feature> ())

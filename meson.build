@@ -86,7 +86,7 @@ endif
 executable('d','d.c',install : true)
 progs = [['prog1', ['prog1.c', 'foo.c']],
          ['prog2', ['prog2.c', 'bar.c']]]
-
+fdsfsdf=range(20)
 
 subdir_done()
 env = environment()

@@ -1,6 +1,7 @@
 (define-module (meson function)
   #:use-module (system base target)
   #:use-module (meson types)
+  #:use-module (srfi srfi-16)
   #:use-module (guix sets)
   #:use-module (system base compile)
   #:use-module (ice-9 optargs)
@@ -145,6 +146,12 @@
                          #:type type
                          #:description description))))
 
+(define-public range
+  (case-lambda*
+   ((stop)
+    (make <range> #:stop stop))
+   ((start stop #:optional (step 1))
+    (make <range> #:start start #:step step #:stop stop))))
 (define* (%assert exp #:optional message)
   (pk 'assert exp message))
 
