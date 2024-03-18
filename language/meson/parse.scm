@@ -184,7 +184,8 @@
 (define-public (meson-ast->tree-il exp)
   (define rerun meson-ast->tree-il)
   (define loc (location exp))
-
+  (define (f-id n)
+    (rerun `(f-id ,n)))
   (match exp
     (('build-definition body ...)
      (list->seq loc (append (map rerun body)
@@ -204,7 +205,7 @@
      (make-primcall loc f (map rerun (list a b))))
 
     (('%relational kw v1 lst)
-     (make-call loc (rerun `(f-id %relational))
+     (make-call loc (f-id '%relational)
                 (cons (make-const loc kw)
                       (map rerun (list v1 lst)))))
     (('%vector value ...)
@@ -213,28 +214,29 @@
     (('if test consequent alternate)
      (make-conditional loc (rerun test) (rerun consequent) (rerun alternate)))
     (('%equal op v1 v2)
-     (make-call loc (rerun `(f-id ,op)) (map rerun (list v1 v2)) ))
+     (make-call loc (f-id op) (map rerun (list v1 v2)) ))
 
     (('or v1 v2)
      (make-conditional loc (rerun v1) (rerun v1) (rerun v2)))
     (((and (or '/ '% '+ '-) v) v1 v2)
-     (make-call loc (rerun `(f-id ,v)) (map rerun (list v1 v2))))
+     (make-call loc (f-id v) (map rerun (list v1 v2))))
 
     (((and '- v) v1)
-     (make-call loc (rerun `(f-id ,v)) (map rerun (list v1))))
+     (make-call loc (f-id v) (map rerun (list v1))))
 
     (('%call id n ass)
-     (make-call loc
-                (rerun `(f-id meson-call))
-                (list  (rerun id)
-                       (make-call loc (mk-ts-list loc)
-                                  (map rerun n))
-                       (make-call loc (mk-ts-list loc)
+     (make-call
+      loc
+      (rerun `(f-id meson-call))
+      (list  (rerun id)
+             (make-call loc (mk-ts-list loc)
+                        (map rerun n))
+             (make-call loc (mk-ts-list loc)
 
-                                  (map rerun ass)))))
+                        (map rerun ass)))))
     (('method-call obj f args ...)
      (make-call loc
-                (rerun `(f-id meson-method-call))
+                (f-id 'meson-method-call)
                 (cons*
                  (rerun obj)
                  (make-const
@@ -244,13 +246,13 @@
                      u)))
                  (map rerun args))))
     (('%subscript id index)
-     (make-call loc (rerun `(f-id %subscript)) (map rerun (list id index))))
+     (make-call loc (f-id '%subscript) (map rerun (list id index))))
     (('%assignment '= (and name (? symbol?)) value)
-     (make-call loc (rerun `(f-id %assignment))
+     (make-call loc (f-id '%assignment)
                 (list (make-const loc name)
                       (rerun value))))
     (('%assignment '+= (and name (? symbol?)) value)
-     (make-call loc (rerun `(f-id %assignment+=))
+     (make-call loc (f-id '%assignment+=)
                 (list (make-const loc name)
                       (rerun value))))
     (('dict)
@@ -262,9 +264,11 @@
      (make-call
       loc
       (make-module-ref loc '(meson types) 'make-dictionarie #f)
-      (map (match-lambda ((s o) (make-call loc
-                                           (mk-ts-list loc)
-                                           (list (rerun s) (rerun o))))) a)))
+      (map (match-lambda
+             ((s o)
+              (make-call loc
+                         (mk-ts-list loc)
+                         (list (rerun s) (rerun o))))) a)))
     (('not a)
      (make-call
       loc (make-module-ref loc '(guile) 'not #t)
@@ -272,10 +276,8 @@
     (('multiline-string str)
      (rerun str))
     (('%id name)
-     ;; (make-toplevel-ref loc #f name)
-     (make-call loc (rerun `(f-id %get-id))
-                (list (make-const loc name)))
-     )
+     (make-call loc (f-id '%get-id)
+                (list (make-const loc name))))
     ((? unspecified?)
      (make-void loc))
     ((and (or (? string?) (? number?) (? keyword?)) obj)
