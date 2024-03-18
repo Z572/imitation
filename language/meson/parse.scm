@@ -112,13 +112,32 @@
     (("function_expression" ("identifier" name) . args)
      `(%call
        (f-id ,(string->symbol name))
-       ,@(append-map (lambda (x)
+       ;; ,@(append-map (lambda (x)
+       ;;                 (match (retrans x)
+       ;;                   (('arg x)
+       ;;                    (list x))
+       ;;                   (('karg name value)
+       ;;                    (list (symbol->keyword name) value))))
+       ;;               args)
+       ,(concatenate
+         (filter-map (lambda (x)
                        (match (retrans x)
                          (('arg x)
                           (list x))
                          (('karg name value)
-                          (list (symbol->keyword name) value))))
-                     args)
+                          #f)
+                         (else #f)))
+                     args))
+       ,(concatenate
+         (filter-map (lambda (x)
+                       (match (retrans x)
+                         (('karg name value)
+                          (list (symbol->keyword name) value))
+                         (('arg x)
+                          #f)
+                         (else #f)))
+                     args))
+
        ))
     (("unary_expression" ("unary_operator" (op op)) expr)
      ;; not
@@ -138,8 +157,8 @@
       ;; ("function_expression" ("identifier" name) . args)
       )
      (let ((f b (match (retrans fe)
-                  ((_ name . args)
-                   (values name args)))))
+                  ((_ name args kwargs)
+                   (values name (append args kwargs))))))
        `(method-call
          ,(retrans id) ,f
          ,@b)))
@@ -160,10 +179,12 @@
   (and (pair? x)
        (let ((props (source-properties x)))
          (and (pair? props) props))))
+(define (mk-ts-list loc)
+  (make-module-ref loc '(guile) 'list #t))
 (define-public (meson-ast->tree-il exp)
   (define rerun meson-ast->tree-il)
   (define loc (location exp))
-  (pk 'loc loc)
+
   (match exp
     (('build-definition body ...)
      (list->seq loc (append (map rerun body)
@@ -187,7 +208,7 @@
                 (cons (make-const loc kw)
                       (map rerun (list v1 lst)))))
     (('%vector value ...)
-     (make-call loc (make-module-ref loc '(guile) 'list #t)
+     (make-call loc (mk-ts-list loc)
                 (map rerun value)))
     (('if test consequent alternate)
      (make-conditional loc (rerun test) (rerun consequent) (rerun alternate)))
@@ -202,8 +223,15 @@
     (((and '- v) v1)
      (make-call loc (rerun `(f-id ,v)) (map rerun (list v1))))
 
-    (('%call id ass ...)
-     (make-call loc (rerun id) (map rerun ass)))
+    (('%call id n ass)
+     (make-call loc
+                (rerun `(f-id meson-call))
+                (list  (rerun id)
+                       (make-call loc (mk-ts-list loc)
+                                  (map rerun n))
+                       (make-call loc (mk-ts-list loc)
+
+                                  (map rerun ass)))))
     (('method-call obj f args ...)
      (make-call loc
                 (rerun `(f-id meson-method-call))
@@ -235,7 +263,7 @@
       loc
       (make-module-ref loc '(meson types) 'make-dictionarie #f)
       (map (match-lambda ((s o) (make-call loc
-                                           (make-module-ref loc '(guile) 'list #t)
+                                           (mk-ts-list loc)
                                            (list (rerun s) (rerun o))))) a)))
     (('not a)
      (make-call

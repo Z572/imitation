@@ -77,6 +77,9 @@
         (apply func* (append (if is-module '() (list object)) args))
         (error 'no-method-found (format #f "no method call '~a'" func)))))
 
+(define*-public (meson-call func args kwargs)
+  (apply func (append args kwargs)))
+
 (define (license-case str)
   (match str
     ("LGPLv2+" license:lgpl2.0+)
