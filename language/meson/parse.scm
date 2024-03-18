@@ -338,7 +338,9 @@
         (let loop ((rn (ts-tree-root-node (ts-parser-parse-string (force parser) s))))
           (when (ts-node-has-error? rn)
             (and-let* ((n (find-child rn ts-node-has-error?))
-                       (parent (find-up-pos-is-0 n) ))
+                       (parent (find-up-pos-is-0 n) )
+                       (start (ts-node-start-point n))
+                       (end (ts-node-end-point n)))
               (format #t "I get a error!
 ~a
 ~a
@@ -351,10 +353,15 @@
 
                       (string-join (map (lambda (str)
 
-                                          (string-append (make-string (+ 4 (cdr (ts-node-start-point n))) #\space)
+                                          (string-append (make-string (+ 3 (cdr (ts-node-start-point n))) #\space)
                                                          str
                                                          "\n"))
-                                        '("^" "I think is this is a error")))
+                                        (list (make-string
+                                               (if (= (car start) (car end))
+                                                   (- (cdr end) (cdr start))
+                                                   20)
+                                               #\^)
+                                              "I think is this is a error")))
 
                       (node-string n)
                       (ts-node-start-point n) (ts-node-end-point n))
