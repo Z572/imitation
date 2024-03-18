@@ -1,4 +1,5 @@
 (define-module (meson function)
+  #:use-module (meson compiler)
   #:use-module (system base target)
   #:use-module (meson types)
   #:use-module (srfi srfi-16)
@@ -351,8 +352,7 @@
   'cmd_array)
 (define*-public (get_compiler meson language #:key (native #f))
   (assert (is-a? meson <meson>))
-  1
-  (make <compiler>))
+  (lookup-compiler language))
 (define*-public (project_version meson)
   (assert (is-a? meson <meson>))
   (.version meson))

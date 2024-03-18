@@ -38,10 +38,13 @@
             .value
             .module
             .name
-            .dependencys))
+            .dependencys)
+  #:export (define-class*))
+
 (define-syntax-rule (define-class* a ...)
   (define-class a ...
     #:metaclass <redefinable-class>))
+
 (define-class* <dictionarie> ()
   (tb #:init-form (make-hash-table) #:getter .tb))
 
@@ -61,7 +64,6 @@
   (hash-map->list (lambda (k v) k) (.tb dictionarie)))
 
 (define-class* <compiler> ())
-(define-class* <c-compiler> (<compiler>))
 (define-class* <dependency> ()
   (name #:getter .name #:init-keyword #:name))
 
