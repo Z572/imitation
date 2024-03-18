@@ -82,22 +82,29 @@
         (with-exception-handler
             (lambda (e)
               (pk 'method-error-on func
-                  e)
+                  e
+                  (string-append (%meson-current-directory) "/meson.build"))
               (raise-exception e))
           (lambda ()
             (apply func* (append (if is-module '() (list object)) args)))
           #:unwind? #t)
 
-        (error 'no-method-found
-               (format #f "object '~a' no method call '~a'" object func)))))
+        (if is-module
+            (error 'no-method-found
+                   (format #f "on ~S module: '~a' no func call '~a'"
+                           (string-append (%meson-current-directory) "/meson.build")
+                           object func))
+            (error 'no-method-found
+                   (format #f "on ~S object '~a' no method call '~a'"
+                           (string-append (%meson-current-directory) "/meson.build")
+                           object func))))))
 
 (define*-public (meson-call func args kwargs)
   (let ((f (module-ref (current-module*) func #f)))
     (if f
         (with-exception-handler
             (lambda (e)
-              (pk 'error-on func
-                  e)
+              (pk 'error-on func e)
               (raise-exception e))
           (lambda ()
             (apply f (append args kwargs)))
@@ -580,16 +587,29 @@
   (pk 'returncode)
   0)
 
+(define-public (version_compare str str2)
+  #t)
+
 (define-public (subdir dir)
-  (with-directory-excursion (string-append (.root (%meson)) "/" dir)
-    (call-with-prompt 'subdir_done
-      (lambda ()
-        (compile-and-load
-         "meson.build"
-         #:from (@ (language meson spec) meson)
-         #:to 'value
-         #:env (current-module)))
-      (lambda (k) k))))
+  (define cwd (string-append (%meson-current-directory) "/" dir))
+  (with-directory-excursion cwd
+    (parameterize ((%meson-current-directory (getcwd)))
+      (with-exception-handler
+          (lambda (e)
+            (pk 'sub cwd e)
+            (raise-exception e))
+        (lambda ()
+          (call-with-prompt 'subdir_done
+            (lambda ()
+              (compile-and-load
+               "meson.build"
+               #:from (@ (language meson spec) meson)
+               #:to 'value
+               #:env (current-module*)))
+            (lambda (k) k)))
+        #:unwind? #t)
+      ))
+  )
 
 (define-public (subdir_done)
   ((abort-to-prompt 'subdir_done)))
