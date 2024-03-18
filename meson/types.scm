@@ -22,6 +22,7 @@
             <build-machine>
             <target-machine>
             <dictionarie>
+            <exe>
             configuration.table
             .version
             .meson-version
@@ -35,7 +36,8 @@
             .type
             .value
             .module
-            .name))
+            .name
+            .dependencys))
 (define-syntax-rule (define-class* a ...)
   (define-class a ...
     #:metaclass <redefinable-class>))
@@ -62,8 +64,11 @@
 
 (define-class* <meson-module> ()
   (module #:init-keyword #:module #:getter .module))
-(define-class* <build-target> ())
+(define-class* <build-target> ()
+  (name #:init-keyword #:name #:getter .name))
 (define-class* <lib> (<build-target>))
+(define-class* <exe> (<build-target>)
+  (dependencys #:init-keyword #:dependencys #:getter .dependencys))
 (define-class* <feature> ())
 (define-class* <run-result> ())
 (define-method (write (d <dependency>) port)

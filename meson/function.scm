@@ -260,7 +260,8 @@
                             (gnu_symbol_visibility #f)
                             (native #f)
                             #:rest o)
-  (pk 'executable a link_with 'install install 'dependencies dependencies 'rest o))
+  (pk 'executable a link_with 'install install 'dependencies dependencies 'rest o)
+  (make <exe> #:name a #:dependencys dependencies))
 
 (define*-public (add_languages lang
                                #:key
