@@ -94,7 +94,7 @@
           str)))
 
 (define*-public (project name
-                         language
+                         #:optional (language '())
                          #:key
                          version
                          (license #f)
