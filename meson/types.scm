@@ -1,4 +1,5 @@
 (define-module (meson types)
+  #:use-module (imitation utils)
   #:use-module (ice-9 optargs)
   #:use-module (oop goops)
   #:use-module (oop goops describe)

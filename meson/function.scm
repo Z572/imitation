@@ -1,4 +1,5 @@
 (define-module (meson function)
+  #:use-module (imitation utils)
   #:use-module (meson compiler)
   #:use-module (system base target)
   #:use-module (meson types)
@@ -91,10 +92,7 @@
     ("LGPLv2+" license:lgpl2.0+)
     (else (pk 'unknow-license!)
           str)))
-(define (ensure-list o)
-  (if (list? o)
-      o
-      (list o)))
+
 (define*-public (project name
                          language
                          #:key
