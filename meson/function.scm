@@ -361,7 +361,8 @@
       #:program
       (any (lambda (path)
              (search-path (cons "." (parse-path (getenv "PATH"))) path))
-           paths))))
+           paths)
+      #:origin-path path)))
 
 (define*-public (get_option name)
   (assert (string? name))

@@ -43,6 +43,7 @@
             .name
             .dependencys
             meson-targets
+            meson-external-program
             .targets)
   #:export (define-class*))
 
@@ -78,6 +79,7 @@
   (format port "#<<meson-module> ~a ~x>" (or (module-name (.module d)) "unknown-name!") (object-address d) ))
 (define-class* <meson-target> ()
   (name #:init-keyword #:name #:getter .name #:init-value #f))
+
 (define-method (initialize (m <meson-target>) args)
   (let ((o (next-method))
         (meson (%meson)))
@@ -153,7 +155,8 @@
   (build-machine #:getter .build-machine #:init-thunk (lambda () (make <build-machine>)))
   (host-machine #:getter .host-machine #:init-thunk (lambda () (make <host-machine>)))
   (target-machine #:getter .target-machine #:init-thunk (lambda () (make <target-machine>)))
-  (targets #:accessor .targets #:init-value (list->set '())))
+  (targets #:accessor .targets #:init-value (list->set '()))
+  (external-program #:accessor .external-program #:init-value (list->set '())))
 
 (define-public (meson-name m)
   (.name m))
@@ -176,10 +179,24 @@
 
 (define-class* <external-program> ()
   (program #:init-value #f #:init-keyword #:program #:accessor .program)
+  (origin-path #:init-value #f #:init-keyword #:origin-path #:accessor .origin-path)
   (found? #:init-value #f #:accessor .fount))
 
+(define-method (initialize (m <external-program>) args)
+  (let ((o (next-method))
+        (meson (%meson)))
+    (set! (.external-program meson)
+          (set-insert m (.external-program meson)))
+    o)
+  )
+
+(define (meson-external-program m)
+  (set->list (.external-program m)))
+
 (define-method (write (d <external-program>) port)
-  (format port "#<<external-program> '~a' ~x>" (.program d) (object-address d) ))
+  (format port "#<<external-program> '~a' found: '~a' ~x>"
+          (.origin-path d)
+          (.program d) (object-address d) ))
 
 (define-class* <configuration-data> ()
   (readonly? #:init-value #f #:accessor conf-data-readonly?)
