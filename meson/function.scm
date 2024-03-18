@@ -108,6 +108,7 @@
                    (let ((v var))
                      (when v
                        (set! (acc meson) v)))))))
+    (when=> name .name)
     (when=> meson_version .meson-version)
     (when=> (list->set (ensure-list language)) .languages)
     (when=> version .version)

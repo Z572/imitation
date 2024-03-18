@@ -31,6 +31,8 @@
 
 (define* (describe-meson #:optional (meson (%meson)))
   (format #t "meson project~%")
+  (format #t "name: ~S~%" (meson-name meson))
+  (format #t "Language: ~@{~a~}~%" (meson-languages meson))
   (module-for-each (lambda (x n)
                      (format #t "var ~a: value: ~S~%" x (variable-ref n)))
                    (.variables meson))
