@@ -88,8 +88,8 @@ progs = [['prog1', ['prog1.c', 'foo.c']],
          ['prog2', ['prog2.c', 'bar.c']]]
 
 
+subdir_done()
 env = environment()
-
 # MY_PATH will be '0:1:2:3'
 env.set('MY_PATH', '1')
 env.append('MY_PATH', '2')

@@ -181,6 +181,7 @@
   (make <dependency> #:name name))
 (define*-public (include_directories a . o)
   (pk 'include_directories))
+
 (define*-public (library a
                   source
                   #:key
@@ -214,7 +215,7 @@
                   version
                   #:allow-other-keys)
   (pk 'library a source 'dependencies dependencies)
-  (make <lib>))
+  (make <lib> #:dependencies dependencies))
 
 (define*-public (shared_library a
                                 source
@@ -523,8 +524,14 @@
 (define-public (subdir dir)
   (with-directory-excursion dir
     (pk 'subdir dir)
-    (compile-and-load
-     "meson.build"
-     #:from (@ (language meson spec) meson)
-     #:to 'value
-     #:env (current-module))))
+    (call-with-prompt 'subdir_done
+      (lambda ()
+        (compile-and-load
+         "meson.build"
+         #:from (@ (language meson spec) meson)
+         #:to 'value
+         #:env (current-module)))
+      (lambda (k) k))))
+
+(define-public (subdir_done)
+  ((abort-to-prompt 'subdir_done)))

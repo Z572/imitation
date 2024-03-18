@@ -21,10 +21,13 @@
  (ice-9 match))
 
 (parameterize ((%meson-current-directory (dirname (second (program-arguments)))))
-  (compile-and-load
-   (second (program-arguments))
-   #:from meson
-   #:to 'value))
+  (call-with-prompt 'subdir_done
+    (lambda ()
+      (compile-and-load
+       (second (program-arguments))
+       #:from meson
+       #:to 'value))
+    (lambda (k) k)))
 
 (define* (describe-meson #:optional (meson (%meson)))
   (format #t "meson project~%")
