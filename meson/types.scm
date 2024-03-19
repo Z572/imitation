@@ -54,12 +54,10 @@
 (define-class* <dictionarie> ()
   (tb #:init-form (make-hash-table) #:getter .tb))
 
-(define (make-dictionarie . l)
+(define (make-dictionarie k v)
   (let* ((d (make <dictionarie>))
          (tb (.tb d)))
-    (for-each
-     (match-lambda (((? string? v) b) (hash-set! tb v b)))
-     l)
+    (for-each (lambda (k v) (hash-set! tb k v)) k v)
     d))
 (define*-public (dictionarie-get dictionarie key #:optional fallback)
   (hash-ref (.tb dictionarie) key fallback))

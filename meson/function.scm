@@ -104,7 +104,7 @@
     (if f
         (with-exception-handler
             (lambda (e)
-              (pk 'error-on func e)
+              (pk 'error-on func args kwargs e)
               (raise-exception e))
           (lambda ()
             (apply f (append args kwargs)))
@@ -297,6 +297,7 @@
   (make <lib> #:name a #:dependencies dependencies))
 
 (define*-public (executable a
+                            sources
                             #:key
                             (link_with '())
                             (install #f)
@@ -304,8 +305,10 @@
                             (dependencies '())
                             (gnu_symbol_visibility #f)
                             (native #f)
-                            #:rest o)
-  (pk 'executable a link_with 'install install 'dependencies dependencies 'rest o)
+                            ;; #:rest o
+                            )
+  (pk 'executable a link_with 'install install 'dependencies dependencies ;; 'rest o
+      )
   (make <exe> #:name a #:dependencys dependencies))
 
 (define*-public (add_languages lang

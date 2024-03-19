@@ -36,6 +36,7 @@ message(conf.get('PROJECT_VERSION'))
 #   'UNDEFINED' : false,
 # })
 assert(1 not in [2, 3, 4])
+assert(1 in [2, 3, 4])
 subdir('meson')
 # assert([1, 2, 3, 4, 5].contains(3))
 ccc= false or false or 20
@@ -89,8 +90,14 @@ executable('d','d.c',install : true)
 progs = [['prog1', ['prog1.c', 'foo.c']],
          ['prog2', ['prog2.c', 'bar.c']]]
 fdsfsdf=range(20)
-
-subdir_done()
+gnome=import('gnome')
+c='sdfsdf@fdsfsdf@'
+kkk=c.format('txt')
+b=gnome.genmarshal(
+    'signon-marshal',
+    sources: 'signon-marshal.list',
+    prefix: '_signon_marshal'
+)
 env = environment()
 # MY_PATH will be '0:1:2:3'
 env.set('MY_PATH', '1')
