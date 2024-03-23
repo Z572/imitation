@@ -66,6 +66,8 @@
                (dictionarie-get dictionarie key 'not-found))))
 (define*-public (dictionarie-keys dictionarie)
   (hash-map->list (lambda (k v) k) (.tb dictionarie)))
+(define*-public (dictionarie-for-each proc dictionarie)
+  (hash-for-each proc (.tb dictionarie)))
 
 (define-class* <compiler> ())
 (define-class* <dependency> ()
@@ -121,6 +123,7 @@
   (define! "infodir" "share/info")
   (define! "includedir" "include")
   (define! "sysconfdir" "/etc")
+  (define! "buildtype" "debug")
   (define! "c_args" (list))
   table)
 

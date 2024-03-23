@@ -111,6 +111,10 @@
           #:unwind? #t)
         (error 'no-func-found (format #f "no func call '~a'" func)))))
 
+(define*-public (meson-foreach expr body)
+  ((if (is-a? expr <dictionarie>) dictionarie-for-each for-each)
+   body expr))
+
 (define (license-case str)
   (match str
     ("LGPLv2+" license:lgpl2.0+)
@@ -399,6 +403,15 @@
 (define-method-public (cmd_array (compiler <compiler>))
   (pk 'compiler 'cmd_array compiler)
   'cmd_array)
+
+(define-method-public (has_function (compiler <compiler>) func)
+  (pk 'has_function func)
+  #t)
+(define-method-public (has_argument (compiler <compiler>) func)
+  (pk 'has_argument func)
+  #t)
+(define*-public (add_project_arguments args #:key language)
+  (pk 'add_project_arguments))
 (define*-public (get_compiler meson language #:key (native #f))
   (assert (is-a? meson <meson>))
   (lookup-compiler language))
@@ -409,6 +422,10 @@
 (define*-public (project_name meson)
   (assert (is-a? meson <meson>))
   (.name meson))
+
+(define*-public (global_build_root meson)
+  (assert (is-a? meson <meson>))
+  (pk 'global_build_root "global_build_root"))
 
 (define* (meson-version meson)
   (assert (is-a? meson <meson>))
@@ -501,6 +518,7 @@
 (define*-public (to_upper str)
   (pk 'to_upper (string-upcase str )))
 (define-public (%assignment name value)
+  (pk 'define! name value)
   (let ((hm (.variables (%meson))))
     (if #t;; (module-defined? hm name)
         ;; (error 'redefine! "")
@@ -530,6 +548,7 @@
   (pk 'meson-prepend))
 
 (define-public (%get-id name)
+  (pk 'id- name)
   (module-ref (.variables (%meson)) name ))
 
 (define-method (meson-/ (v1 <number>) (v2 <number>))

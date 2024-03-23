@@ -1,4 +1,5 @@
 (define-module (language meson parse)
+  #:use-module (imitation utils)
   #:use-module (oop goops)
   #:use-module (texinfo string-utils)
   #:use-module (srfi srfi-71)
@@ -29,12 +30,16 @@
   (properties
    #:getter meson-ast-properties
    #:init-value '() #:init-keyword #:properties))
+(define-method (print-location (o <meson-ast>) port)
+  (match (meson-ast-properties o)
+    ((('filename . f) ('line . line) ('column . column))
+     (format port "~a:~a:~a" f line column))
+    (else (format port "unknown:unknown:unknown"))))
+
 (define-method (write (d <meson-ast>) port)
   (format port "#<~a '~a' ~x>"
           (class-name (class-of d))
-          (match (meson-ast-properties d)
-            ((('filename . f) ('line . line) ('column . column))
-             (format #f "~a:~a:~a" f line column)))
+          (print-location d #f)
           (object-address d) ))
 
 (define-class <meson-container> ()
@@ -49,14 +54,14 @@
     ;; (value  #:init-keyword #:value)
     (multiline? #:init-value #f #:init-keyword #:multiline?)
     (fstring? #:init-value #f #:init-keyword #:fstring?))
+
   (define-method (write (d <meson-string>) port)
-    (format port "#<~a '~S' '~a'~x>"
+    (format port "#<~a '~S' '~a' ~x>"
             (class-name (class-of d))
             (.value d)
-            (match (meson-ast-properties d)
-              ((('filename . f) ('line . line) ('column . column))
-               (format #f "~a:~a:~a" f line column)))
+            (print-location d #f)
             (object-address d) ))
+
   (defclass <meson-comment> ())
 
   (defclass <meson-bool> (<meson-container>))
@@ -74,28 +79,44 @@
   (defclass <meson-operator> ()
     (name #:getter meson-operator-name #:init-keyword #:name))
   (defclass <meson-call> ()
-    (name #:getter meson-id-name #:init-keyword #:name)
+    (name #:getter meson-call-name #:init-keyword #:name)
     (args #:getter meson-call-args #:init-keyword #:args)
     (kwargs #:getter meson-call-kwargs #:init-keyword #:kwargs))
+  (defclass <meson-foreach> ()
+    (identifiers #:getter meson-foreach-identifiers #:init-keyword #:identifiers)
+    (expr #:getter meson-foreach-expr #:init-keyword #:expr)
+    (body #:getter meson-foreach-body #:init-keyword #:body))
   (defclass <meson-id> ()
-    (name #:getter meson-id-name #:init-keyword #:name))
+    (name #:getter meson-id-name #:init-keyword #:name)
+    (temp? #:accessor meson-id-temp?
+           #:init-keyword
+           #:temp?
+           #:init-value #f))
+  (define-method (write (d <meson-id>) port)
+    (format port "#<~a '~S' ~a '~a' ~x>"
+            (class-name (class-of d))
+            (meson-id-name d)
+            (meson-id-temp? d)
+            (print-location d #f)
+            (object-address d)))
   (define (get-id id)
     (meson-id-name id)))
 
 (define meson-ast-location meson-ast-properties)
-(define (parse-meson exp*)
+(define* (parse-meson exp* #:optional (tmpvars '()))
+  ;; (unless (null? tmpvars)
+  ;;   (pk 'tmpvars tmpvars))
   (define exp (car exp*))
   (define -loc (match (cdr exp*)
                  ((filename x . y)
                   `((filename . ,filename) (line . ,x) (column . ,y)))
                  (else (error 'unknown-loc ""))))
   (define retrans
-    (lambda (x)
-      (parse-meson x)))
+    (lambda* (x #:optional (tmpvars tmpvars))
+      (parse-meson x tmpvars)))
   (define (get-id name)
     (match (retrans name)
-      (('%id id) id)
-      (($ <meson-id> loc id) id)
+      (($ <meson-id> loc id temp?) id)
       (else (error 'get-id "~a" name))))
   (define (handle-if exp)
     (match exp
@@ -131,7 +152,11 @@
               (("statement" . body)
                (append-map retrans body))
               (("identifier" name)
-               (make <meson-id> #:name (string->symbol name) #:properties -loc))
+               (make <meson-id>
+                 #:name (string->symbol name)
+                 #:properties -loc
+                 #:temp? (member (string->symbol name)
+                                 (map meson-id-name tmpvars))))
               (("assignment_operator" name )
                (make <meson-operator> #:properties -loc #:name (string->symbol name)))
               (("additive_operator" name)
@@ -151,27 +176,32 @@
               (("endforeach" "endforeach")
                'endforeach)
               (("identifier_list" identifier_list)
-               (retrans identifier_list))
+               (list (retrans identifier_list)))
+              (("identifier_list" identifier_list ...)
+               (map retrans identifier_list))
               (("iteration_statement"
                 _
                 identifiers
                 exp
                 body ...
                 (? (lambda (x) (equal? (retrans x) 'endforeach))))
-               `(foreach ,(retrans (pk 's identifiers))
-                         ,(retrans exp)
-                         (begin ,(map retrans body)) ))
+               (let ((ids (retrans identifiers)))
+
+                 (make <meson-foreach>
+                   #:identifiers ids
+                   #:expr (retrans exp)
+                   #:body (map (lambda (x)
+                                 (retrans x ids))
+                               body)
+                   #:properties -loc)))
               (("conditional_expression" conditional exp1 exp2)
                `(if ,(retrans conditional) ,(retrans exp1) ,(retrans exp2) ))
               (("subscript_expression" exp index)
                `(%subscript ,(retrans exp) ,(retrans index)))
-              (("logical_and_expression" arg1 _ ;; (_ op)
-                arg2)
+              (("logical_and_expression" arg1 _ arg2)
                `(if ,(retrans arg1) ,(retrans arg2) #f))
-              (("logical_or_expression" arg1 _ ;; (_ op)
-                arg2)
-               `(if ;; ,op
-                 ,(retrans arg1) ,(retrans arg1) ,(retrans arg2)))
+              (("logical_or_expression" arg1 _ arg2)
+               `(if ,(retrans arg1) ,(retrans arg1) ,(retrans arg2)))
               (("equality_expression" arg1 equality_operator arg2)
                `(%equal ,(retrans equality_operator) ,(retrans arg1) ,(retrans arg2)))
               (("selection_statement" body ...)
@@ -250,9 +280,11 @@
 
                ;;   )
                )
-              (("unary_expression" ("unary_operator" (op op)) expr)
+              (("unary_operator" op)
+               (retrans op))
+              (("unary_expression" op expr)
                ;; not
-               `(,(string->symbol op) ,(retrans expr)))
+               `(,(retrans op) ,(retrans expr)))
               (("unary_expression" ("unary_operator" "-") expr)
                ;; -
                `(- ,(retrans expr)))
@@ -261,19 +293,13 @@
               (("in" "in")
                'in)
               (("relational_operator" op) op)
-              ;; (("relational_operator" op ...)
-              ;;  (map retrans op))
               (("relational_expression" id relational_operator v)
                `(%relational ,(retrans relational_operator) ,(retrans id) ,(retrans v)  ))
-              ;; (("relational_expression" id ("relational_operator" op) v)
-              ;;  `(%relational (,(string->symbol op)) ,(retrans id) ,(retrans v)  ))
               (("argument" expr)
                `(arg ,(retrans expr)))
               (("keyword_argument" id expr)
                `(karg ,(get-id id) ,(retrans expr)))
-              (("method_expression" id fe
-                ;; ("function_expression" ("identifier" name) . args)
-                )
+              (("method_expression" id fe)
                (let ((f b (match (retrans fe)
                             ((_ name args kwargs)
                              (values name (append args kwargs)))
@@ -429,17 +455,48 @@
       (list (rerun a))))
     (('multiline-string str)
      (rerun str))
-    (($ <meson-id> loc name)
-     (make-call
-      loc
-      (f-id '%get-id)
-      (list (make-const loc name))))
+    (($ <meson-id> loc name temp?)
+                                        ;(pk 'meson-id loc name temp?)
+     (if temp?
+         (make-lexical-ref loc name name)
+         (make-call
+          loc
+          (f-id '%get-id)
+          (list (make-const loc name)))))
     ((? unspecified?)
      (make-void loc))
     ((and (? keyword?) obj)
      (make-const loc obj))
     (($ <meson-string> loc value multiline? fstring?)
      (make-const loc value))
+    (($ <meson-foreach> loc ids expr body)
+     (let* ((identifiers (map rerun ids)))
+       (make-call
+        loc (f-id 'meson-foreach)
+        (list
+         ;; (make-call
+         ;;  loc
+         ;;  (mk-ts-list loc)
+         ;;  identifiers)
+                                        ;(make-const loc (map get-id ids))
+         (rerun expr)
+         (make-lambda
+          loc
+          '()
+          (make-lambda-case
+           loc
+           (map get-id ids)
+           #f #f #f '()
+           (map
+            (lambda (x)
+              (get-id x)
+              ;; (gensym (symbol->string (get-id x)))
+              )
+            ids)
+
+           (list->seq loc (map rerun body))
+           #f)))))
+     )
     (($ <meson-number> loc value)
      (make-const loc value))
     (($ <meson-bool> loc value)
