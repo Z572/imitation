@@ -1,5 +1,6 @@
 (define-module (meson types)
   #:use-module (imitation utils)
+  #:use-module (ice-9 format)
   #:use-module (guix sets)
   #:use-module (ice-9 optargs)
   #:use-module (oop goops)
