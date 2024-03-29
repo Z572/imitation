@@ -40,6 +40,7 @@ SUFFIXES = .scm .go
 
 SOURCES = 	imitation.scm \
 			imitation/utils.scm\
+			imitation/languages.scm\
 			language/meson/parse.scm \
 			language/meson/spec.scm \
 			meson/compiler.scm		\

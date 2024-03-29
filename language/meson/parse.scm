@@ -1,4 +1,5 @@
 (define-module (language meson parse)
+  #:use-module (imitation languages)
   #:use-module (ice-9 format)
   #:use-module (imitation utils)
   #:use-module (oop goops)
@@ -579,7 +580,10 @@
 
     (if (string-null? s)
         the-eof-object
-        (let loop ((rn (ts-tree-root-node (ts-parser-parse-string (force parser) s))))
+        (let loop ((rn (ts-tree-root-node (ts-parser-parse-string
+                                           (ts-parser-new
+                                            #:language (force ts-meson))
+                                           s))))
           (when (ts-node-has-error? rn)
             (and-let* ((n (find-child rn ts-node-has-error?))
                        (parent (find-up-pos-is-0 n) )
