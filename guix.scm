@@ -44,7 +44,8 @@
                         ((options->transformation
                           '((with-commit . "guile-ts=958a045fa1b2c1eb73bf46a833894a8684c7a861")))
                          guile-ts)
-                        tree-sitter-meson))
+                        tree-sitter-meson
+                        tree-sitter-cmake))
     (synopsis "")
     (description "")
     (home-page "")
