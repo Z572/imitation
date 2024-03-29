@@ -1,4 +1,5 @@
 (define-module (language meson parse)
+  #:use-module (ice-9 format)
   #:use-module (imitation utils)
   #:use-module (oop goops)
   #:use-module (texinfo string-utils)
@@ -34,7 +35,7 @@
   (match (meson-ast-properties o)
     ((('filename . f) ('line . line) ('column . column))
      (format port "~a:~a:~a" f line column))
-    (else (format port "unknown:unknown:unknown"))))
+    (else (format port "#f:#f:#f"))))
 
 (define-method (write (d <meson-ast>) port)
   (format port "#<~a '~a' ~x>"
@@ -49,13 +50,14 @@
                (syntax-rules ()
                  ((_ n (cl ...)acc ...)
                   (begin (define-class n (cl ... <meson-ast>)
-                           acc ...))))))
+                           acc ...)
+                         (export n))))))
   (defclass <meson-string> (<meson-container>)
     ;; (value  #:init-keyword #:value)
     (multiline? #:init-value #f #:init-keyword #:multiline?)
     (fstring? #:init-value #f #:init-keyword #:fstring?))
 
-  (define-method (write (d <meson-string>) port)
+  (define-method (write (d <meson-container>) port)
     (format port "#<~a '~S' '~a' ~x>"
             (class-name (class-of d))
             (.value d)
@@ -63,12 +65,18 @@
             (object-address d) ))
 
   (defclass <meson-comment> ())
-
+  (defclass <meson-definition> (<meson-container>))
   (defclass <meson-bool> (<meson-container>))
   (defclass <meson-array> (<meson-container>))
   (defclass <meson-number> (<meson-container>)
     ;; (value  #:init-keyword #:value)
     )
+  ;; (define-method (write (d <meson-number>) port)
+  ;;   (format port "#<~a '~S' '~a' ~x>"
+  ;;           (class-name (class-of d))
+  ;;           (.value d)
+  ;;           (print-location d #f)
+  ;;           (object-address d) ))
   (defclass <meson-dictionary> ()
     (keywords
      #:init-value '()
@@ -76,12 +84,36 @@
     (values
      #:init-value '()
      #:getter meson-dictionary-values #:init-keyword #:values))
+  (define-method (write (d <meson-dictionary>) port)
+    (format port "#<~a keywords: ~a values: ~a '~a' ~x>"
+            (class-name (class-of d))
+            (meson-dictionary-keywords d)
+            (meson-dictionary-values d)
+            (print-location d #f)
+            (object-address d)))
+
   (defclass <meson-operator> ()
     (name #:getter meson-operator-name #:init-keyword #:name))
+  (define-method (write (d <meson-operator>) port)
+    (format port "#<~a '~S' '~a' ~x>"
+            (class-name (class-of d))
+            (meson-operator-name d)
+            (print-location d #f)
+            (object-address d) ))
   (defclass <meson-call> ()
     (name #:getter meson-call-name #:init-keyword #:name)
     (args #:getter meson-call-args #:init-keyword #:args)
     (kwargs #:getter meson-call-kwargs #:init-keyword #:kwargs))
+
+  (define-method (write (d <meson-call>) port)
+    (format port "#<~a '~S' args: ~a kwargs: ~a '~a' ~x>"
+            (class-name (class-of d))
+            (meson-call-name d)
+            (meson-call-args d)
+            (meson-call-kwargs d)
+            (print-location d #f)
+            (object-address d)))
+
   (defclass <meson-foreach> ()
     (identifiers #:getter meson-foreach-identifiers #:init-keyword #:identifiers)
     (expr #:getter meson-foreach-expr #:init-keyword #:expr)
@@ -92,6 +124,16 @@
            #:init-keyword
            #:temp?
            #:init-value #f))
+  (defclass <meson-if> ()
+    (condition #:accessor meson-if-condition
+               #:init-keyword
+               #:condition)
+    (then #:accessor meson-if-then
+          #:init-keyword
+          #:then)
+    (else #:accessor meson-if-else
+          #:init-keyword
+          #:else))
   (define-method (write (d <meson-id>) port)
     (format port "#<~a '~S' ~a '~a' ~x>"
             (class-name (class-of d))
@@ -103,14 +145,17 @@
     (meson-id-name id)))
 
 (define meson-ast-location meson-ast-properties)
+
+(define (parse-kw o)
+  (match o
+    (("not" "not")
+     'not)
+    (("in" "in")
+     'in)))
+
 (define* (parse-meson exp* #:optional (tmpvars '()))
-  ;; (unless (null? tmpvars)
-  ;;   (pk 'tmpvars tmpvars))
-  (define exp (car exp*))
-  (define -loc (match (cdr exp*)
-                 ((filename x . y)
-                  `((filename . ,filename) (line . ,x) (column . ,y)))
-                 (else (error 'unknown-loc ""))))
+  (define exp (syntax->datum exp*))
+  (define -loc (lambda (x) (pk '-loc x)(syntax-source x)))
   (define retrans
     (lambda* (x #:optional (tmpvars tmpvars))
       (parse-meson x tmpvars)))
@@ -142,9 +187,12 @@
 
   (define e (match exp
               (("build_definition" . body)
-               `(build-definition ,@(map retrans body)))
+               (make <meson-definition>
+                 #:value (map retrans body)
+                 #:properties -loc))
               (("comment")
-               (make <meson-comment>))
+               (make <meson-comment>
+                 #:properties -loc))
               (("continue" _)
                'continue)
               (("break" _)
@@ -205,7 +253,7 @@
               (("equality_expression" arg1 equality_operator arg2)
                `(%equal ,(retrans equality_operator) ,(retrans arg1) ,(retrans arg2)))
               (("selection_statement" body ...)
-               (handle-if body))
+               (pk 'if (handle-if body)))
               (("statement_list" . s)
                `(begin ,@(map retrans s)))
               (((or "multiplicative_operator" "equality_operator") op)
@@ -249,37 +297,7 @@
                                             #f)
                                            (else #f)))
                                        args))
-                 )
-               ;; `(%call
-               ;;   (f-id ,(get-id name))
-               ;;   ;; ,@(append-map (lambda (x)
-               ;;   ;;                 (match (retrans x)
-               ;;   ;;                   (('arg x)
-               ;;   ;;                    (list x))
-               ;;   ;;                   (('karg name value)
-               ;;   ;;                    (list (symbol->keyword name) value))))
-               ;;   ;;               args)
-               ;;   ,(concatenate
-               ;;     (filter-map (lambda (x)
-               ;;                   (match (retrans x)
-               ;;                     (('arg x)
-               ;;                      (list x))
-               ;;                     (('karg name value)
-               ;;                      #f)
-               ;;                     (else #f)))
-               ;;                 args))
-               ;;   ,(concatenate
-               ;;     (filter-map (lambda (x)
-               ;;                   (match (retrans x)
-               ;;                     (('karg name value)
-               ;;                      (list (symbol->keyword name) value))
-               ;;                     (('arg x)
-               ;;                      #f)
-               ;;                     (else #f)))
-               ;;                 args))
-
-               ;;   )
-               )
+                 ))
               (("unary_operator" op)
                (retrans op))
               (("unary_expression" op expr)
@@ -360,18 +378,14 @@
     (make-module-ref loc '(meson function) id #t))
 
   (match exp
-    (('build-definition body ...)
-     (list->seq loc (append (map rerun body)
-                            '()
-                            ;; (list (make-call
-                            ;;        loc
-                            ;;        (make-module-ref loc '(meson types) '%meson #t)
-                            ;;        '()))
-                            )))
+    (($ <meson-definition> loc body)
+     (list->seq
+      loc (append (map rerun body)
+                  '())))
     (('begin body ...)
      (list->seq loc (map rerun body)))
-    (#t (make-const loc #t))
-    (#f (make-const loc #f))
+    ;; (#t (make-const loc #t))
+    ;; (#f (make-const loc #f))
     ;; (('f-id id)
     ;;  (make-module-ref loc '(meson function) id #t))
     (((and f (or '* '< '>)) a b)
@@ -415,10 +429,10 @@
                  (make-const
                   loc
                   (match f
-                    (($ <meson-id> loc id)
+                    (($ <meson-id> _ id)
                      id)
                     ((? symbol? o) o)
-                    (else (error '-merror ""))))
+                    (_ (error '-merror ""))))
                  (map rerun args))))
     (('%subscript id index)
      (make-call loc (f-id '%subscript loc) (map rerun (list id index))))
@@ -527,12 +541,12 @@
         (loop (ts-node-parent node)))))
 
 (define parser
-  (delay (ts-parser-new
-          #:language
-          (get-ts-language-from-file
-           ;; /gnu/store/z7rn6i3bd96il9lcr7l4ykh6imr8a267-tree-sitter-meson-1.2-0.3d6dfbd/lib/tree-sitter/
-           "libtree-sitter-meson.so"
-           "tree_sitter_meson"))))
+  (delay
+    (ts-parser-new
+     #:language
+     (get-ts-language-from-file
+      "libtree-sitter-meson.so"
+      "tree_sitter_meson"))))
 
 (define* (skfjdsfjs str #:key (bg 0)
                     (err #f)
@@ -592,31 +606,26 @@
                                               "I think is this is a error"))
                                   #:before (car start))
                        "\n")
-
-
-
                       (node-string n)
-                      (ts-node-start-point n) (ts-node-end-point n))
-              ;; (exit 1 )
-              )
-            )
+                      (ts-node-start-point n) (ts-node-end-point n))))
           (let ((childs (ts-node-childs rn #t)))
             (if (null? childs)
                 (if (ts-node-extra? rn)
                     #f
-                    (cons (list (ts-node-type rn)
-                                (node-string rn))
-                          (cons (port-filename port)
-                                (ts-node-start-point rn))))
-                (if (string=?
-                     (ts-node-type rn) "string_literal")
-
-                    (cons (list (ts-node-type rn)
-                                (node-string rn))
-                          (cons (port-filename port)
-                                (ts-node-start-point rn)))
-
-                    (cons (cons (ts-node-type rn)
-                                (filter-map loop childs))
-                          (cons (port-filename port)
-                                (ts-node-start-point rn))))))))))
+                    (datum->syntax
+                     #f (list (ts-node-type rn)
+                              (node-string rn))
+                     #:source
+                     `((filename . ,(port-filename port))
+                       (line . ,(car (ts-node-start-point rn)))
+                       (column . ,(cdr (ts-node-start-point rn))))))
+                (datum->syntax
+                 #f (cons (ts-node-type rn)
+                          (if (string=?
+                               (ts-node-type rn) "string_literal")
+                              (node-string rn)
+                              (filter-map loop childs)))
+                 #:source
+                 `((filename . ,(port-filename port))
+                   (line . ,(car (ts-node-start-point rn)))
+                   (column . ,(cdr (ts-node-start-point rn)))))))))))

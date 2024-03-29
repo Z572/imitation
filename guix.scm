@@ -30,11 +30,15 @@
     (source (local-file "." (string-append name "-checkout")
                         #:recursive? #t
                         #:select? (git-predicate (dirname (current-filename)))))
-    (build-system guile-build-system)
+    (build-system gnu-build-system)
     (arguments
      (list #:make-flags #~'("GUILE_AUTO_COMPILE=0")))
     (native-inputs
-     (list guile-3.0-latest))
+     (list
+      autoconf
+      automake
+      pkg-config
+      guile-3.0-latest))
     (inputs (list guile-3.0-latest ))
     (propagated-inputs (list
                         ((options->transformation

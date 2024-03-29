@@ -21,11 +21,12 @@
   #:title "meson build system"
   #:reader read-meson
   #:parser parse-meson
-  #:make-default-environment
-  (lambda ()
-    (let ((m (make-module)))
-      m))
+  ;; #:make-default-environment
+  ;; (lambda ()
+  ;;   (let ((m (make-module)))
+  ;;     m))
   #:printer write
+;  #:evaluator (lambda (x module) (pk 'o)(meson-ast->tree-il x))
   #:compilers
   `(;; (scheme . ,(lambda (source module wtf)
     ;;              (values
