@@ -135,6 +135,7 @@
     (else #:accessor meson-if-else
           #:init-keyword
           #:else))
+  (define-class <meson-conditional> (<meson-if>))
   (define-method (write (d <meson-id>) port)
     (format port "#<~a '~S' ~a '~a' ~x>"
             (class-name (class-of d))
@@ -152,7 +153,9 @@
     (("not" "not")
      'not)
     (("in" "in")
-     'in)))
+     'in)
+    (((or "multiplicative_operator" "equality_operator") op)
+     (string->symbol op))))
 
 (define* (parse-meson exp* #:optional (tmpvars '()))
   (define exp (syntax->datum exp*))
@@ -244,7 +247,11 @@
                                body)
                    #:properties -loc)))
               (("conditional_expression" conditional exp1 exp2)
-               `(if ,(retrans conditional) ,(retrans exp1) ,(retrans exp2) ))
+               (make <meson-conditional>
+                 #:properties -loc
+                 #:condition (retrans conditional)
+                 #:then (retrans exp1)
+                 #:else (retrans exp2)))
               (("subscript_expression" exp index)
                `(%subscript ,(retrans exp) ,(retrans index)))
               (("logical_and_expression" arg1 _ arg2)

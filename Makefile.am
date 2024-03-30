@@ -52,7 +52,8 @@ SOURCES = 	imitation.scm \
 			meson/module/gnome.scm	\
 			meson/module/pkgconfig.scm
 
-TESTS = tests/meson/read.scm
+TESTS = tests/meson/read.scm \
+		tests/meson/eval.scm
 
 TEST_EXTENSIONS = .scm
 SCM_LOG_DRIVER =                                \

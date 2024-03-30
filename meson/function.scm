@@ -435,8 +435,10 @@
   (assert (is-a? meson <meson>))
   (.root meson))
 
+(define-generic set )
 (define-method-public (set (o <env>) key value . args)
   (pk 'set-env))
+
 (define*-public (custom_target name
                                #:key (dependencies '())
                                input
@@ -471,12 +473,12 @@
 (define-method (meson-system (o <build-machine>))
   "system")
 
-(define-method-public (set (o <configuration-data>) key value . args)
-  (apply (lambda* (#:key (description #f))
-           (hash-set! (configuration.table o) key
-                      `((value . ,value)
-                        ((description . ,description)))))
-         args))
+;; (define-method-public (set (o <configuration-data>) key value . args)
+;;   (apply (lambda* (#:key (description #f))
+;;            (hash-set! (configuration.table o) key
+;;                       `((value . ,value)
+;;                         ((description . ,description)))))
+;;          args))
 (define-method-public (set10 (o <configuration-data>) key value . args)
   (apply set o key (->bool value) args))
 
