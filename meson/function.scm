@@ -83,7 +83,8 @@
             (lambda (e)
               (pk 'method-error-on func
                   e
-                  (string-append (%meson-current-directory) "/meson.build"))
+                  (false-if-exception
+                   (string-append (%meson-current-directory) "/meson.build")))
               (raise-exception e))
           (lambda ()
             (apply func* (append (if is-module '() (list object)) args)))
@@ -96,7 +97,8 @@
                            object func))
             (error 'no-method-found
                    (format #f "on ~S object '~a' no method call '~a'"
-                           (string-append (%meson-current-directory) "/meson.build")
+                           (false-if-exception
+                            (string-append (%meson-current-directory) "/meson.build"))
                            object func))))))
 
 (define*-public (meson-call func args kwargs)
@@ -517,6 +519,10 @@
 
 (define*-public (to_int o)
   (if o 1 0))
+
+(define*-public (to_string o #:optional (true "true") (false "false"))
+  (if o true false))
+
 (define*-public (underscorify str)
   (pk 'underscorify str ))
 (define*-public (to_upper str)

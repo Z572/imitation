@@ -53,6 +53,10 @@
 
 (with-new-meson
  (rc "a=true.to_int()"
-     "b=false.to_int()")
+     "b=false.to_int()"
+     "c=true.to_string('#t')"
+     "d=false.to_string('#f')")
  (check-variable a 1)
- (check-variable b 0))
+ (check-variable b 0)
+ (check-variable c "#t")
+ (check-variable d "false"))
