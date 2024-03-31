@@ -515,6 +515,8 @@
 (define-method-public (project_license (o <meson>))
   (.license o))
 
+(define*-public (to_int o)
+  (if o 1 0))
 (define*-public (underscorify str)
   (pk 'underscorify str ))
 (define*-public (to_upper str)

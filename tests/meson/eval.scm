@@ -25,21 +25,34 @@
     "if test"
     (meson-name)))
 
-(parameterize ((%meson (make <meson>)))
-  (rc "a=20"
-      "b=true"
-      "b2=false"
-      "arr=[]"
-      "dict={}")
-  (let-syntax ((check
-                (syntax-rules ()
-                  ((_ n expect varname)
-                   (test-equal n
-                     expect
-                     (variable-ref
-                      (car (assoc-ref (meson-variables)
-                                      varname))))))))
-    (check "number" 20 'a)
-    (check "bool1" #t 'b)
-    (check "bool2" #f 'b2)
-    (check "array" '() 'arr)))
+(define-syntax-rule (with-new-meson body ...)
+  (parameterize ((%meson (make <meson>)))
+    body ...))
+
+(define-syntax check-variable
+  (syntax-rules ()
+    ((_ n varname expect)
+     (test-equal n
+       expect
+       (variable-ref
+        (car (assoc-ref (meson-variables)
+                        'varname)))))
+    ((_ expect varname)
+     (check-variable (object->string 'varname)
+                     expect varname))))
+(with-new-meson
+ (rc "a=20"
+     "b=true"
+     "b2=false"
+     "arr=[]"
+     "dict={}")
+ (check-variable "number" a 20)
+ (check-variable "bool1" b #t)
+ (check-variable "bool2" b2 #f)
+ (check-variable "array" arr '()))
+
+(with-new-meson
+ (rc "a=true.to_int()"
+     "b=false.to_int()")
+ (check-variable a 1)
+ (check-variable b 0))
