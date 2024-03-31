@@ -16,18 +16,18 @@
         (lambda (k) k))
       (%meson))))
 
-(parameterize ((%meson (make <meson>)))
-  (rc "project('if test', 'c')")
-  (test-equal "language"
-    '("c")
-    (meson-languages))
-  (test-equal "meson-name"
-    "if test"
-    (meson-name)))
-
 (define-syntax-rule (with-new-meson body ...)
   (parameterize ((%meson (make <meson>)))
     body ...))
+
+(with-new-meson
+ (rc "project('if test', 'c')")
+ (test-equal "language"
+   '("c")
+   (meson-languages))
+ (test-equal "meson-name"
+   "if test"
+   (meson-name)))
 
 (define-syntax check-variable
   (syntax-rules ()
