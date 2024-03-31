@@ -66,8 +66,10 @@
  (rc "endswith='endswith'.endswith('with')"
      "noendswith='endswith'.endswith('nowith')"
      "to_lower='TO_LOWER'.to_lower()"
-     "to_upper='to_upper'.to_upper()")
+     "to_upper='to_upper'.to_upper()"
+     "underscorify='abc def -'.underscorify()")
  (check-variable "endswith" endswith #t)
  (check-variable noendswith #f)
  (check-variable to_lower "to_lower")
- (check-variable to_upper "TO_UPPER"))
+ (check-variable to_upper "TO_UPPER")
+ (check-variable underscorify "abc_def__"))

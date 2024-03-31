@@ -526,8 +526,21 @@
 (define*-public (to_string o #:optional (true "true") (false "false"))
   (if o true false))
 
+(define a-zA-Z0-9
+  (->char-set "\
+abcdefghijklmnopqrstuvwxyz\
+ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+0123456789"))
+
 (define*-public (underscorify str)
-  (pk 'underscorify str ))
+  (string-map (lambda (char)
+                (if (char-set-contains?
+                     a-zA-Z0-9
+                     char)
+                    char
+                    #\_))
+              str))
+
 (define*-public (to_upper str)
   (pk 'to_upper (string-upcase str )))
 (define-public (%assignment name value)
