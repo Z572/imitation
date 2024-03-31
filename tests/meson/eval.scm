@@ -60,3 +60,14 @@
  (check-variable b 0)
  (check-variable c "#t")
  (check-variable d "false"))
+
+
+(with-new-meson
+ (rc "endswith='endswith'.endswith('with')"
+     "noendswith='endswith'.endswith('nowith')"
+     "to_lower='TO_LOWER'.to_lower()"
+     "to_upper='to_upper'.to_upper()")
+ (check-variable "endswith" endswith #t)
+ (check-variable noendswith #f)
+ (check-variable to_lower "to_lower")
+ (check-variable to_upper "TO_UPPER"))

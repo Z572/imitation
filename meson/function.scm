@@ -60,7 +60,10 @@
             (meson-error . error)
             (meson-system . system)
             (meson-cpu . cpu)
-            (meson-version . version)))
+            (meson-version . version)
+            endswith
+            to_lower
+            to_upper))
 
 (define-public (%relational kw i o)
   (match kw
@@ -566,6 +569,12 @@
 
 (define-public (join_paths . paths)
   (string-join paths "/"))
+
+(define-method (endswith (o <string>) (fragment <string>))
+  (string-suffix? fragment o))
+
+(define-method (to_lower (o <string>))
+  (string-downcase o))
 
 (define-method-public (meson-/ (str1 <string>) (str2 <string>))
   (join_paths str1 str2))
