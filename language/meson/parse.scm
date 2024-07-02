@@ -635,6 +635,22 @@
                                 childs))))
                 ("statement"
                  (append-map loop childs))
+                ("method_expression"
+                 (match childs
+                   ((id fe)
+                    (let ((f b (match (loop fe)
+                                 ((_ name args kwargs)
+                                  (values name (append args kwargs)))
+                                 (($ <meson-call> loc f args kwargs)
+                                  (values f (append args kwargs)))
+                                 (o (error 'f-b o)))))
+                      `(method-call
+                        ,(loop id) ,f
+                        ,@b)))))
+                ("subscript_expression"
+                 (match childs
+                   ((exp index)
+                    `(%subscript ,(loop exp) ,(loop index)))))
                 ("int_literal"
                  (make <meson-number>
                    #:value (handle-number (node-string rn))))
@@ -660,6 +676,10 @@
                  (let ((str (node-string rn)))
                    (make <meson-string>
                      #:value (substring str 1 (- (string-length str) 1)))))
+                ("multiline_string_literal"
+                 (let ((str (node-string rn)))
+                   (make <meson-string>
+                     #:value (substring str 3 (- (string-length str) 3)))))
                 ("unary_expression"
                  (match childs
                    ((op exp)

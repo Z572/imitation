@@ -43,6 +43,7 @@
 
 (check "id" ((@ (meson function) %get-id) 'id))
 (check "'string'" "string")
+(check "'''string'''" "string")
 (check "true" #t)
 (check "false" #f)
 (check "#comment" (if #f #f))
@@ -65,3 +66,14 @@
         (quote %relational)
         ((@ (guile) list) (quote in) 2 ((@ (guile) list) 2))
         ((@ (guile) list))))
+
+(check "build_machine.cpu()"
+       ((@ (meson function) meson-method-call)
+        ((@ (meson function) %get-id)
+         'build_machine)
+        'cpu))
+(check "a[0]"
+       ((@ (meson function) %subscript)
+        ((@ (meson function) %get-id)
+         'a)
+        0))
