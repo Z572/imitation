@@ -8,7 +8,7 @@ AC_SUBST(COPYRIGHT, "'(2024)")
 AC_SUBST(LICENSE, gpl3+)
 AC_CONFIG_SRCDIR(imitation)
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([1.12 gnu silent-rules subdir-objects color-tests parallel-tests -Woverride -Wno-portability])
+AM_INIT_AUTOMAKE([1.12 gnu silent-rules subdir-objects color-tests -Woverride -Wno-portability])
 AM_SILENT_RULES([yes])
 
 AC_CONFIG_FILES([imitation/configuration.scm])

@@ -20,7 +20,7 @@
 (define-language meson
   #:title "meson build system"
   #:reader read-meson
-  #:parser parse-meson
+  ;#:parser parse-meson
   ;; #:make-default-environment
   ;; (lambda ()
   ;;   (let ((m (make-module)))

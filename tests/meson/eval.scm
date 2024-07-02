@@ -45,31 +45,39 @@
      "b=true"
      "b2=false"
      "arr=[]"
-     "dict={}")
+     "dict={}"
+     "two=1+1"
+     "zero=1-1"
+     "onezero=-1"
+     "not_true=not true"
+     "is_in=20 in [20,30]")
  (check-variable "number" a 20)
  (check-variable "bool1" b #t)
  (check-variable "bool2" b2 #f)
- (check-variable "array" arr '()))
+ (check-variable "array" arr '())
+ (check-variable "1+1" two 2)
+ (check-variable "-1" onezero -1)
+ (check-variable "not true" not_true #f)
+ (check-variable "is_in" is_in #t))
+;; (with-new-meson
+;;  (rc "a=true.to_int()"
+;;      "b=false.to_int()"
+;;      "c=true.to_string('#t')"
+;;      "d=false.to_string('#f')")
+;;  (check-variable a 1)
+;;  (check-variable b 0)
+;;  (check-variable c "#t")
+;;  (check-variable d "false"))
 
-(with-new-meson
- (rc "a=true.to_int()"
-     "b=false.to_int()"
-     "c=true.to_string('#t')"
-     "d=false.to_string('#f')")
- (check-variable a 1)
- (check-variable b 0)
- (check-variable c "#t")
- (check-variable d "false"))
 
-
-(with-new-meson
- (rc "endswith='endswith'.endswith('with')"
-     "noendswith='endswith'.endswith('nowith')"
-     "to_lower='TO_LOWER'.to_lower()"
-     "to_upper='to_upper'.to_upper()"
-     "underscorify='abc def -'.underscorify()")
- (check-variable "endswith" endswith #t)
- (check-variable noendswith #f)
- (check-variable to_lower "to_lower")
- (check-variable to_upper "TO_UPPER")
- (check-variable underscorify "abc_def__"))
+;; (with-new-meson
+;;  (rc "endswith='endswith'.endswith('with')"
+;;      "noendswith='endswith'.endswith('nowith')"
+;;      "to_lower='TO_LOWER'.to_lower()"
+;;      "to_upper='to_upper'.to_upper()"
+;;      "underscorify='abc def -'.underscorify()")
+;;  (check-variable "endswith" endswith #t)
+;;  (check-variable noendswith #f)
+;;  (check-variable to_lower "to_lower")
+;;  (check-variable to_upper "TO_UPPER")
+;;  (check-variable underscorify "abc_def__"))

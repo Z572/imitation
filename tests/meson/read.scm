@@ -1,46 +1,67 @@
 (use-modules (language meson parse)
+             (language tree-il)
              (ice-9 match))
 
-(define-syntax-rule (read* str)
+(define (read* str)
   (call-with-input-string
-      (string-append str
-                     "\n")
+      (string-append str "\n")
     (lambda (x)
-      (parse-meson
-       (read-meson x (current-module))))))
-(define-syntax-rule (match-s o body ...)
-  (match (read* o)
-    (($ <meson-definition> _ (body ...))
-     #t)))
+      (tree-il->scheme
+       (meson-ast->tree-il
+        (read-meson x (current-module)))))))
 
 (define-syntax-rule (check name body)
-  (test-assert name
-    (match-s
-     name
-     body)))
+  (test-equal name
+    (read* name)
+    'body))
 
-(test-assert "read1"
-  (read* "abc=1"))
-
-(check "call()" ($ <meson-call> _ 'call () ()))
+(check "abc=1" ((@ (meson function) %assignment) 'abc 1))
+(check "abc-=1" ((@ (meson function) %assignment-=) 'abc 1))
+(check "abc+=1" ((@ (meson function) %assignment+=) 'abc 1))
+(check "call()"
+       ((@ (meson function) meson-call)
+        'call
+        ((@ (guile) list)) ((@ (guile) list))))
 (check "call_with_arg('arg1')"
-       ($ <meson-call> _ 'call_with_arg
-          (($ <meson-string> _ "arg1")) ()))
-(check "call_with_karg('arg1',karg1:'20')"
-       ($ <meson-call> _ 'call_with_karg
-          (($ <meson-string> _ "arg1"))
-          (#:karg1 ($ <meson-string> _ "20"))))
+       ((@ (meson function) meson-call)
+        'call_with_arg
+        ((@ (guile) list) "arg1") ((@ (guile) list))))
+(check "1+1"
+       ((@ (meson function) +) 1 1))
+(check "-1"
+       ((@ (meson function) -) 1))
+(check "+1"
+       ((@ (meson function) +) 1))
+(check "not true"
+       ((@ (meson function) not) #t))
 
-(check "id" ($ <meson-id> _ 'id #f))
-(check "true" ($ <meson-bool> loc #t))
-(check "false" ($ <meson-bool> loc #f))
-(check "[]" ($ <meson-array> loc '()))
+(check "call_with_karg('arg1',karg1:'20')"
+       ((@ (meson function) meson-call)
+        'call_with_karg
+        ((@ (guile) list) "arg1")
+        ((@ (guile) list) #:karg1 "20")))
+
+(check "id" ((@ (meson function) %get-id) 'id))
+(check "'string'" "string")
+(check "true" #t)
+(check "false" #f)
+(check "#comment" (if #f #f))
+(check "[]" ((@ (guile) list)))
 (check "[1,2]"
-       ($ <meson-array> loc
-          (($ <meson-number> _ 1)
-           ($ <meson-number> _ 2))))
-(check "[1,]" ($ <meson-array> loc (($ <meson-number> _ 1))))
-(check "{}" ($ <meson-dictionary> loc () ()))
-(check "{'a':20}" ($ <meson-dictionary> _
-                     (($ <meson-string> _ "a"))
-                     (($ <meson-number> _ 20))))
+       ((@ (guile) list) 1 2))
+(check "[1,]" ((@ (guile) list) 1))
+
+(check "{}"
+       ((@@ (meson types) make-dictionarie)
+        ((@ (guile) list))
+        ((@ (guile) list))))
+(check "{'a':20}"
+       ((@@ (meson types) make-dictionarie)
+        ((@ (guile) list) "a")
+        ((@ (guile) list) 20)))
+
+(check "2 in [2]"
+       ((@ (meson function) meson-call)
+        (quote %relational)
+        ((@ (guile) list) (quote in) 2 ((@ (guile) list) 2))
+        ((@ (guile) list))))

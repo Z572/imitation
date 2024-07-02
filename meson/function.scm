@@ -14,7 +14,7 @@
   #:use-module (ice-9 match)
   #:use-module (rnrs base)
   #:use-module ((guix licenses) #:prefix license:)
-  #:re-export (pk)
+  #:re-export (pk not)
   ;; #:pure
   ;; #:use-module ((guile) #:select (define-public
   ;;                                  error
@@ -67,9 +67,9 @@
 
 (define-public (%relational kw i o)
   (match kw
-    ('(not in)
-     (not (%relational '(in) i o)))
-    ('(in)
+    ('#{not in}#
+     (not (%relational 'in i o)))
+    ('in
      (->bool (member i (pk '%relational o))))))
 
 (define (current-module*)
@@ -561,11 +561,15 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZ\
         (module-remove! hm n)
         (error 'remove-removed! name))))
 
-(define-public (%assignment+= name value)
-  (let ((hm (.variables (%meson))))
-    (if (module-defined? hm name)
-        (module-define! hm name (meson-+ (module-ref hm name) value))
-        (error '%assignment-no-defined! "+="))))
+(define-syntax-rule (define-assignment* name* func)
+  (define-public (name* name value)
+    (let ((hm (.variables (%meson))))
+      (if (module-defined? hm name)
+          (module-define! hm name (func (module-ref hm name) value))
+          (error '%assignment-no-defined! 'func)))))
+
+(define-assignment* %assignment-= meson--)
+(define-assignment* %assignment+= meson-+)
 
 (define* (meson-append env a b)
   (pk 'meson-append))
