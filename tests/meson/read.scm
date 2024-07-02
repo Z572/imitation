@@ -77,3 +77,8 @@
         ((@ (meson function) %get-id)
          'a)
         0))
+
+(check "1 / 2"
+       ((@ (meson function) /) 1 2))
+(check "'hello'/'world'"
+       ((@ (meson function) /) "hello" "world"))

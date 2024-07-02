@@ -582,7 +582,7 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZ\
   (module-ref (.variables (%meson)) name ))
 
 (define-method (meson-/ (v1 <number>) (v2 <number>))
-  (/ v1 v2))
+  (floor (/ v1 v2)))
 
 (define-public (join_paths . paths)
   (string-join paths "/"))

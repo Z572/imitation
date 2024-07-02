@@ -686,7 +686,7 @@
                     (make <meson-operator>
                       #:name (string->symbol (node-string op))
                       #:items (list (loop exp))))))
-                ((or "assignment_statement" "additive_expression")
+                ((or "assignment_statement" "additive_expression" "multiplicative_expression")
                  (define assignment? (string= (ts-node-type rn) "assignment_statement"))
                  (match childs
                    ((exp op exp2)

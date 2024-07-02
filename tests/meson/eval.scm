@@ -50,7 +50,8 @@
      "zero=1-1"
      "onezero=-1"
      "not_true=not true"
-     "is_in=20 in [20,30]")
+     "is_in=20 in [20,30]"
+     "mes='a'+ 'b'")
  (check-variable "number" a 20)
  (check-variable "bool1" b #t)
  (check-variable "bool2" b2 #f)
@@ -58,7 +59,17 @@
  (check-variable "1+1" two 2)
  (check-variable "-1" onezero -1)
  (check-variable "not true" not_true #f)
- (check-variable "is_in" is_in #t))
+ (check-variable "is_in" is_in #t)
+ (check-variable "mes" mes "ab"))
+(with-new-meson
+ (rc "a=1"
+     "a+=1"
+     "c=1 / 2"
+     "path= 'hello' / 'world'")
+ (check-variable "a" a 2)
+ (check-variable "c" c 0)
+ (check-variable "path" path "hello/world"))
+
 ;; (with-new-meson
 ;;  (rc "a=true.to_int()"
 ;;      "b=false.to_int()"
