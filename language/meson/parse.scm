@@ -579,9 +579,9 @@
             (string-replace n "#" 0 1 ))
            (else n)))))
 
-(define (read-meson port env)
-  (let ((s (get-string-all port)))
-    (define filename (port-filename port))
+(define* (read-meson port #:optional (env #f))
+  (let ((s (if (port? port) (get-string-all port) port)))
+    (define filename (if (port? port) (port-filename port) #f))
     (define (node-string n)
       (substring-utf8
        s

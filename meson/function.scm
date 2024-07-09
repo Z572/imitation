@@ -630,6 +630,9 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZ\
   (pk 'found <external-program>)
   #t)
 
+(define-method-public (found (f <exe>))
+  #t)
+
 (define-method-public (found (f <dependency>))
   (pk 'found-dep f)
   #t)
@@ -637,6 +640,9 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZ\
 (define-method-public (full_path (f <exe>))
   (pk 'full_path f)
   "full_path")
+
+(define-method-public (name (f <exe>))
+  (.name f))
 
 (define-method-public (path (f <external-program>))
   (pk 'path f)

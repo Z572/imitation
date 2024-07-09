@@ -106,7 +106,8 @@
   (step #:init-keyword #:step #:init-value 1))
 
 (define-class* <lib> (<build-target>))
-(define-class* <exe> (<build-target>))
+(define-class* <exe> (<build-target>)
+  )
 (define-class* <feature> ())
 (define-class* <run-result> ())
 (define-method (write (d <dependency>) port)

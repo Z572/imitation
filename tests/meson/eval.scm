@@ -1,20 +1,27 @@
 (use-modules (language meson parse)
+             (system base target)
              (oop goops)
              (meson types)
              (system base compile)
              (ice-9 match))
+(define-syntax-rule (check-exp str o)
+  (test-equal str o
+              (compile (read-meson str)
+                       #:from 'meson
+                       #:to 'value)))
 (define-syntax-rule (rc str ...)
-  (call-with-input-string
-      (string-join (list str ...) "\n" 'suffix)
-    (lambda (x)
-      (call-with-prompt 'subdir_done
-        (lambda ()
-          (read-and-compile
-           x
-           #:from 'meson
-           #:to 'value))
-        (lambda (k) k))
-      (%meson))))
+  (false-if-exception
+   (call-with-input-string
+       (string-join (list str ...) "\n" 'suffix)
+     (lambda (x)
+       (call-with-prompt 'subdir_done
+         (lambda ()
+           (read-and-compile
+            x
+            #:from 'meson
+            #:to 'value))
+         (lambda (k) k))
+       (%meson)))))
 
 (define-syntax-rule (with-new-meson body ...)
   (parameterize ((%meson (make <meson>)))
@@ -52,43 +59,37 @@
      "not_true=not true"
      "is_in=20 in [20,30]"
      "mes='a'+ 'b'")
- (check-variable "number" a 20)
- (check-variable "bool1" b #t)
- (check-variable "bool2" b2 #f)
- (check-variable "array" arr '())
- (check-variable "1+1" two 2)
- (check-variable "-1" onezero -1)
- (check-variable "not true" not_true #f)
- (check-variable "is_in" is_in #t)
- (check-variable "mes" mes "ab"))
+ (check-variable a 20)
+ (check-variable b #t)
+ (check-variable b2 #f)
+ (check-variable arr '())
+ (check-variable two 2)
+ (check-variable onezero -1)
+ (check-variable not_true #f)
+ (check-variable is_in #t)
+ (check-variable mes "ab"))
 (with-new-meson
  (rc "a=1"
-     "a+=1"
-     "c=1 / 2"
-     "path= 'hello' / 'world'")
- (check-variable "a" a 2)
- (check-variable "c" c 0)
- (check-variable "path" path "hello/world"))
+     "a+=1")
+ )
 
-;; (with-new-meson
-;;  (rc "a=true.to_int()"
-;;      "b=false.to_int()"
-;;      "c=true.to_string('#t')"
-;;      "d=false.to_string('#f')")
-;;  (check-variable a 1)
-;;  (check-variable b 0)
-;;  (check-variable c "#t")
-;;  (check-variable d "false"))
+(check-exp "c=1 / 2
+c" 0)
+(check-exp "c='hello' / 'world'
+c" "hello/world")
+(test-expect-fail 1)
+(check-exp"'hello' / '/world'" "/world")
+(check-exp "false.to_int()" 0 )
+(check-exp "true.to_int()" 1)
+(check-exp "false.to_string()" "false")
+(check-exp "true.to_string()" "true" )
+(check-exp "true.to_string('#t','#f')" "#t" )
 
-
-;; (with-new-meson
-;;  (rc "endswith='endswith'.endswith('with')"
-;;      "noendswith='endswith'.endswith('nowith')"
-;;      "to_lower='TO_LOWER'.to_lower()"
-;;      "to_upper='to_upper'.to_upper()"
-;;      "underscorify='abc def -'.underscorify()")
-;;  (check-variable "endswith" endswith #t)
-;;  (check-variable noendswith #f)
-;;  (check-variable to_lower "to_lower")
-;;  (check-variable to_upper "TO_UPPER")
-;;  (check-variable underscorify "abc_def__"))
+(check-exp "'endswith'.endswith('with')" #t)
+(check-exp "'endswith'.endswith('nowith')" #f)
+(check-exp "'TO_LOWER'.to_lower()" "to_lower")
+(check-exp "'to_upper'.to_upper()" "TO_UPPER")
+(check-exp "'abc def -'.underscorify()" "abc_def__")
+(check-exp "build_machine.endian()" "little")
+(check-exp "executable('f', 'f.c', install : true).found()" #t)
+(check-exp "executable('f', 'f.c', install : true).name()"  "f")
